@@ -1,0 +1,128 @@
+.authors-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: 0 40px;
+  }
+  
+  .authors {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    padding: 15px 0;
+    scroll-behavior: smooth;
+  }
+  
+  .author-item {
+    flex: 0 0 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 8px;
+    background: #fff;
+  }
+  
+  .author-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background-color: #f8f9fa;
+  }
+  
+  .author-photo {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+  }
+  
+  .author-name {
+    margin: 0;
+    font-size: 1.2em;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+  }
+  
+  .author-status {
+    margin: 5px 0 0;
+    font-size: 0.9em;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+  }
+  
+  .scroll-button {
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 1.5em;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+  
+  .scroll-button:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+  }
+  
+  @media (max-width: 768px) {
+    .author-item {
+      flex: 0 0 150px;
+    }
+  
+    .author-photo {
+      width: 100px;
+      height: 100px;
+    }
+  
+    .author-name {
+      font-size: 1em;
+    }
+  
+    .author-status {
+      font-size: 0.8em;
+    }
+  
+    .scroll-button {
+      width: 30px;
+      height: 30px;
+      font-size: 1.2em;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .author-item {
+      flex: 0 0 120px;
+    }
+  
+    .author-photo {
+      width: 80px;
+      height: 80px;
+    }
+  
+    .author-name {
+      font-size: 0.9em;
+    }
+  
+    .author-status {
+      font-size: 0.7em;
+    }
+  
+    .authors-container {
+      padding: 0 30px;
+    }
+  }

@@ -1,0 +1,50 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Список авторов{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/profiles.css' %}">
+{% endblock %}
+
+{% block content %}
+    <section class="category mt-5">
+        <h2>Зарегистрированные авторы</h2>
+        <div class="authors-container position-relative">
+            <button class="scroll-button left btn btn-outline-secondary position-absolute top-50 start-0 translate-middle" 
+                    onclick="scrollAuthors('left', 'authors-list')">❮</button>
+            <div class="authors d-flex overflow-auto" id="authors-list">
+                {% for profile in profiles %}
+                    <a href="{% url 'store:profile' profile.user.username %}" class="author-item me-3 text-center text-decoration-none">
+                        {% if profile.photo %}
+                            <img src="{{ profile.photo.url }}" alt="{{ profile.user.username }}" class="author-photo" loading="lazy">
+                        {% else %}
+                            <img src="{% static 'images/default_photo.jpg' %}" alt="{{ profile.user.username }}" class="author-photo" loading="lazy">
+                        {% endif %}
+                        <h3 class="author-name">{{ profile.user.username }}</h3>
+                        {% if profile.status %}
+                            <p class="author-status">{{ profile.status }}</p>
+                        {% endif %}
+                    </a>
+                {% empty %}
+                    <p>Нет зарегистрированных авторов.</p>
+                {% endfor %}
+            </div>
+            <button class="scroll-button right btn btn-outline-secondary position-absolute top-50 end-0 translate-middle" 
+                    onclick="scrollAuthors('right', 'authors-list')">❯</button>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        function scrollAuthors(direction, containerId) {
+            const container = document.getElementById(containerId);
+            const scrollAmount = container.offsetWidth * 0.8;
+            container.scroll({
+                left: direction === 'left' ? container.scrollLeft - scrollAmount : container.scrollLeft + scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+{% endblock %}

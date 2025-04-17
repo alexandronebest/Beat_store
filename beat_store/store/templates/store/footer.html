@@ -1,0 +1,46 @@
+{% load static %}
+<footer class="footer bg-light py-3">
+    <div class="footer-container container">
+        <div class="footer-left d-flex justify-content-center mb-3">
+            <a href="https://telegram.org" class="social-link mx-2" target="_blank">
+                <img src="{% static 'images/logo_telegram.png' %}" alt="Telegram" class="social-icon">
+            </a>
+            <a href="https://vk.com" class="social-link mx-2" target="_blank">
+                <img src="{% static 'images/logo_vk.png' %}" alt="VK" class="social-icon">
+            </a>
+            <a href="mailto:support@beatstore.com" class="social-link mx-2">
+                <img src="{% static 'images/logo_mail.png' %}" alt="Mail" class="social-icon">
+            </a>
+            <a href="https://instagram.com" class="social-link mx-2" target="_blank">
+                <img src="{% static 'images/logo_inst.png' %}" alt="Instagram" class="social-icon">
+            </a>
+        </div>
+        <div class="footer-center text-center mb-3">
+            <h3 class="footer-brand">Beat Store</h3>
+        </div>
+        <div class="footer-right d-flex justify-content-center mb-3">
+            <button class="contact-button btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#contactModal">Контактная Информация</button>
+        </div>
+    </div>
+</footer>
+
+<div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contactModalLabel">Контактная информация</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Свяжитесь с нами:</p>
+                <ul>
+                    <li>Email: <a href="mailto:support@beatstore.com">support@beatstore.com</a></li>
+                    <li>Telegram: <a href="https://t.me/beatstore" target="_blank">@beatstore</a></li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>

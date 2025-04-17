@@ -1,0 +1,15 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Добавить песню - Beat Store{% endblock %}
+
+{% block content %}
+    <div class="container my-4">
+        <h1 class="text-center mb-4">Добавить новую песню</h1>
+        <form method="post" enctype="multipart/form-data" class="filter-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary w-100">Добавить</button>
+        </form>
+    </div>
+{% endblock %}

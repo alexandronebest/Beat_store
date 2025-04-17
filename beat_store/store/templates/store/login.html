@@ -1,0 +1,15 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Вход - Beat Store{% endblock %}
+
+{% block content %}
+    <div class="container my-4">
+        <h1 class="text-center mb-4">Вход</h1>
+        <form method="post" class="filter-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary w-100">Войти</button>
+        </form>
+    </div>
+{% endblock %}

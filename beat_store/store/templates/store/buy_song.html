@@ -1,0 +1,36 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Купить песню - {{ song.title }}{% endblock %}
+
+{% block content %}
+<main>
+    <section class="category">
+        <h2>Покупка песни</h2>
+        <div class="song-item">
+            <div class="song-info">
+                <h3 class="song-title">{{ song.title }}</h3>
+                <p class="song-author">{{ song.author.username }}</p>
+                <p>Цена: ₽{{ song.price }}</p>
+                <p>Ваш баланс: ₽{{ user_balance }}</p>
+            </div>
+        </div>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% if user_balance >= song.price %}
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn auth-btn">Купить за ₽{{ song.price }}</button>
+            </form>
+        {% else %}
+            <p class="text-danger">Недостаточно средств! Пополните баланс.</p>
+            <a href="{% url 'store:profile' request.user.username %}" class="btn auth-btn">К профилю</a>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

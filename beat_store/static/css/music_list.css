@@ -1,0 +1,340 @@
+:root {
+  --footer-bg: #1a1a1a;
+  --primary-color: #4CAF50;
+  --dark-bg: #1a1a1a;
+  --light-bg: #f5f5f5;
+  --text-dark: #333;
+  --text-light: #fff;
+  --close-button-color: #070000;
+  --transition: all 0.3s ease;
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.15);
+  --like-color: #fc0; /* Жёлтый цвет лайка как в Яндекс.Музыке */
+}
+
+.container {
+  max-width: 1400px;
+  padding: 0 15px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-size: 2.5rem;
+  color: var(--text-dark);
+  margin-bottom: 2rem;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.filter-form {
+  background: var(--text-light);
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+}
+
+.form-control, .form-select {
+  border-radius: 50px;
+  padding: 0.6rem 1.5rem;
+  border: 2px solid var(--primary-color);
+  font-family: 'Montserrat', sans-serif;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
+  outline: none;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: var(--text-light);
+  border: none;
+  border-radius: 50px;
+  padding: 0.6rem 1.5rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.btn-primary:hover {
+  background: #388e3c;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+.songs-container {
+  position: relative;
+  user-select: none;
+  padding: 0 60px;
+}
+
+.songs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 1rem 0;
+  scroll-behavior: smooth;
+  gap: 1rem;
+}
+
+.songs::-webkit-scrollbar {
+  display: none;
+}
+
+.song-item {
+  flex: 0 0 200px;
+  background: var(--text-light);
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.song-item:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.song-image-container {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* 1:1 Aspect Ratio */
+}
+
+.song-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 15px 15px 0 0;
+}
+
+.song-controls {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 50px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.song-item:hover .song-controls {
+  opacity: 1;
+}
+
+.song-controls .like-button {
+  position: relative;
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 1.5rem;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.song-controls .like-button::after {
+  content: attr(data-likes);
+  position: absolute;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-light);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.song-controls .like-button.liked {
+  color: var(--like-color);
+}
+
+.song-controls .like-button:hover {
+  color: var(--like-color);
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(255, 204, 0, 0.6));
+}
+
+.song-controls .play-button {
+  background: var(--primary-color);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  color: var(--text-light);
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.song-controls .play-button:hover {
+  background: #388e3c;
+  transform: scale(1.15);
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.8);
+}
+
+.song-controls .buy-button {
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 1.6rem;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.song-controls .buy-button:hover {
+  color: var(--primary-color);
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(76, 175, 80, 0.6));
+}
+
+.song-info {
+  padding: 1rem;
+  text-align: center;
+}
+
+.song-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-author {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-author-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.song-author-link:hover {
+  text-decoration: underline;
+  color: #388e3c;
+}
+
+.scroll-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--primary-color);
+  width: 45px;
+  height: 45px;
+  box-shadow: var(--shadow-md);
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  transition: var(--transition);
+  z-index: 10;
+}
+
+.scroll-button.left {
+  left: 10px;
+}
+
+.scroll-button.right {
+  right: 10px;
+}
+
+.scroll-button:hover {
+  background: var(--primary-color);
+  color: var(--text-light);
+  transform: translateY(-50%) scale(1.1);
+}
+
+@media (max-width: 768px) {
+  .song-item {
+    flex: 0 0 160px;
+  }
+
+  .song-title {
+    font-size: 1rem;
+  }
+
+  .song-controls .play-button {
+    width: 45px;
+    height: 45px;
+    font-size: 1.6rem;
+  }
+
+  .form-control, .form-select {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .song-item {
+    flex: 0 0 140px;
+  }
+
+  .song-title {
+    font-size: 0.9rem;
+  }
+
+  .song-author {
+    font-size: 0.8rem;
+  }
+
+  .song-controls {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .song-controls .play-button {
+    width: 40px;
+    height: 40px;
+    font-size: 1.4rem;
+  }
+
+  .song-controls .like-button {
+    font-size: 1.3rem;
+  }
+
+  .song-controls .buy-button {
+    font-size: 1.4rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+}
