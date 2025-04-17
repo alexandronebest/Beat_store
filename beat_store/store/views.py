@@ -21,19 +21,17 @@ def index(request):
     cached_data = cache.get(cache_key)
     
     if not cached_data:
-        # Получаем топ песен и новые песни
         top_songs = Song.objects.annotate(likes_count=Count('likes')).order_by('-likes_count', '-total_plays')[:10]
         new_songs = Song.objects.order_by('-created_at')[:10]
         genres = Genre.objects.all()
         authors = Profile.objects.select_related('user').all()
 
-        # Формируем songs_data только для отображаемых песен (top_songs + new_songs)
         displayed_songs = list(top_songs) + list(new_songs)
         songs_data = [
             {
                 'id': song.id,
                 'title': song.title,
-                'path': song.path.url,  # Используем относительный путь, как в data-song-url
+                'path': song.path.url,
                 'author': song.author.username,
                 'price': float(song.price),
                 'total_likes': song.total_likes,
@@ -42,7 +40,6 @@ def index(request):
         ]
         songs_json = json.dumps(songs_data)
 
-        # Сохраняем данные в кэш
         cached_data = {
             'top_songs': top_songs,
             'new_songs': new_songs,
@@ -50,7 +47,7 @@ def index(request):
             'authors': authors,
             'songs_json': songs_json,
         }
-        cache.set(cache_key, cached_data, 300)  # Кэш на 5 минут
+        cache.set(cache_key, cached_data, 300)
 
     context = cached_data
     return render(request, 'store/index.html', context)
@@ -70,7 +67,6 @@ def profile(request, username=None):
         messages.success(request, 'Статус успешно обновлён!')
         return redirect('store:profile', username=user.username)
 
-    # Формируем songs_json для плеера
     songs_data = [
         {
             'id': song.id,
@@ -136,7 +132,7 @@ def add_music_view(request):
             song = form.save(commit=False)
             song.author = request.user
             song.save()
-            cache.delete('index_data')  # Очистка кэша при добавлении
+            cache.delete('index_data')
             messages.success(request, 'Песня успешно добавлена!')
             return redirect('store:music_list')
         messages.error(request, 'Исправьте ошибки в форме.')
@@ -269,21 +265,18 @@ def buy_song(request, song_id):
     song = get_object_or_404(Song, id=song_id)
     user = request.user
 
-    # Проверка, куплена ли песня
     if Transaction.objects.filter(buyer=user, song=song, is_successful=True).exists():
         messages.info(request, f'Песня "{song.title}" уже куплена!')
         return redirect('store:music_list')
 
     if request.method == 'POST':
         if user.balance >= song.price:
-            # Создаём транзакцию
             transaction = Transaction.objects.create(
                 buyer=user,
                 song=song,
                 amount=song.price,
                 is_successful=True
             )
-            # Обновляем баланс покупателя и автора
             user.balance -= song.price
             song.author.balance += song.price
             user.save(update_fields=['balance'])
@@ -330,3 +323,119 @@ def playlist_view(request):
         'songs_json': songs_json,
     }
     return render(request, 'store/playlist.html', context)
+
+@login_required
+def cart_view(request):
+    """
+    Отображает корзину пользователя с песнями, добавленными для покупки.
+    Использует сессии для хранения песен в корзине.
+    """
+    cart = request.session.get('cart', [])
+    songs = Song.objects.filter(id__in=cart).select_related('author', 'genre')
+    total_price = sum(song.price for song in songs)
+
+    songs_data = [
+        {
+            'id': song.id,
+            'title': song.title,
+            'path': request.build_absolute_uri(song.path.url),
+            'author': song.author.username,
+            'price': float(song.price),
+            'total_likes': song.total_likes,
+            'total_plays': song.total_plays
+        } for song in songs
+    ]
+    songs_json = json.dumps(songs_data)
+
+    context = {
+        'songs': songs,
+        'total_price': total_price,
+        'songs_json': songs_json,
+    }
+    return render(request, 'store/cart.html', context)
+
+@login_required
+@require_POST
+def add_to_cart(request, song_id):
+    """
+    Добавляет песню в корзину, хранящуюся в сессии.
+    """
+    song = get_object_or_404(Song, id=song_id)
+    user = request.user
+
+    # Проверка, куплена ли песня
+    if Transaction.objects.filter(buyer=user, song=song, is_successful=True).exists():
+        messages.info(request, f'Песня "{song.title}" уже куплена!')
+        return redirect('store:music_list')
+
+    cart = request.session.get('cart', [])
+    if song_id not in cart:
+        cart.append(song_id)
+        request.session['cart'] = cart
+        request.session.modified = True
+        messages.success(request, f'Песня "{song.title}" добавлена в корзину!')
+    else:
+        messages.info(request, f'Песня "{song.title}" уже в корзине!')
+    return redirect('store:cart')
+
+@login_required
+def remove_from_cart(request, song_id):
+    """
+    Удаляет песню из корзины.
+    """
+    song = get_object_or_404(Song, id=song_id)
+    cart = request.session.get('cart', [])
+    if song_id in cart:
+        cart.remove(song_id)
+        request.session['cart'] = cart
+        request.session.modified = True
+        messages.success(request, f'Песня "{song.title}" удалена из корзины!')
+    else:
+        messages.info(request, f'Песня "{song.title}" не была в корзине!')
+    return redirect('store:cart')
+
+@login_required
+def checkout(request):
+    """
+    Обрабатывает покупку всех песен в корзине.
+    """
+    cart = request.session.get('cart', [])
+    if not cart:
+        messages.info(request, 'Корзина пуста!')
+        return redirect('store:cart')
+
+    songs = Song.objects.filter(id__in=cart).select_related('author')
+    total_price = sum(song.price for song in songs)
+    user = request.user
+
+    if request.method == 'POST':
+        if user.balance >= total_price:
+            for song in songs:
+                if Transaction.objects.filter(buyer=user, song=song, is_successful=True).exists():
+                    continue  # Пропускаем уже купленные песни
+                Transaction.objects.create(
+                    buyer=user,
+                    song=song,
+                    amount=song.price,
+                    is_successful=True
+                )
+                user.balance -= song.price
+                song.author.balance += song.price
+                song.author.save(update_fields=['balance'])
+
+            user.save(update_fields=['balance'])
+            request.session['cart'] = []  # Очищаем корзину
+            request.session.modified = True
+            cache.delete('index_data')
+            messages.success(request, 'Покупка успешно завершена!')
+            return redirect('store:profile', username=user.username)
+        else:
+            messages.error(request, 'Недостаточно средств на балансе!')
+            return redirect('store:cart')
+
+    context = {
+        'songs': songs,
+        'total_price': total_price,
+        'user_balance': user.balance,
+    }
+    return render(request, 'store/checkout.html', context)

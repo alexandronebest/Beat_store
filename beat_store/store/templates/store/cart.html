@@ -1,0 +1,42 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+    
+
+<h2>Корзина</h2>
+    <div class="profile-details">
+        <h1 class="profile-title">{{ profile.user.username }}</h1>
+        {% if request.user == profile.user %}
+            <p class="profile-balance"><strong>Баланс:</strong> ₽{{ request.user.balance }}</p>
+        {% endif %}
+
+    <div class="cart-items">
+        {% if songs %}
+            <ul>
+                {% for song in songs %}
+                    <li class="cart-item">
+                        <div class="cart-song-details">
+                            <img src="{{ song.image_url }}" alt="{{ song.title }}" class="cart-song-image" />
+                            <div>
+                                <span>{{ song.title }}</span> by <span>{{ song.author.username }}</span>
+                            </div>
+                        </div>
+                        <div class="cart-song-price">
+                            <span>₽{{ song.price }}</span>
+                            <form action="{% url 'store:remove_from_cart' song.id %}" method="post" class="cart-remove-form">
+                                {% csrf_token %}
+                                <button type="submit" class="cart-remove-button">Удалить</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="cart-summary">
+                <p>Итого: ₽{{ total_price }}</p>
+                <a href="{% url 'store:checkout' %}" class="checkout-button">Оформить заказ</a>
+            </div>
+        {% else %}
+            <p>Корзина пуста.</p>
+        {% endif %}
+    </div>
+{% endblock %}

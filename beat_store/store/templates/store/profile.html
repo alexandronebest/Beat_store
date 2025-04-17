@@ -18,6 +18,9 @@
                 </div>
                 <div class="profile-details">
                     <h1 class="profile-title">{{ profile.user.username }}</h1>
+                    {% if request.user == profile.user %}
+                        <p class="profile-balance"><strong>Баланс:</strong> ₽{{ request.user.balance }}</p>
+                    {% endif %}
                     <div class="profile-stats">
                         <span><i class="bi bi-heart-fill"></i> {{ profile.total_likes }} лайков</span>
                         <span><i class="bi bi-play-fill"></i> {{ profile.total_plays }} прослушиваний</span>
@@ -27,17 +30,23 @@
                         {% if profile.status %}{{ profile.status }}{% else %}<em>Статус не указан</em>{% endif %}
                     </p>
                     {% if request.user == profile.user %}
-                        <button class="edit-status-btn" onclick="toggleStatusForm()">Изменить статус</button>
-                        <form method="post" action="{% url 'store:profile' profile.user.username %}" class="status-form hidden" id="status-form">
+                        <button class="edit-status-btn btn btn-outline-primary" onclick="toggleStatusForm()">Изменить статус</button>
+                        <form method="post" action="{% url 'store:profile' profile.user.username %}" class="status-form hidden mt-3" id="status-form">
                             {% csrf_token %}
-                            <input type="text" name="status" id="status" class="status-input" 
-                                   value="{{ profile.status|default:'' }}" maxlength="100" placeholder="Введите новый статус">
-                            <button type="submit" class="save-status-btn"><i class="bi bi-save"></i> Сохранить</button>
+                            <div class="input-group">
+                                <input type="text" name="status" id="status" class="form-control" 
+                                       value="{{ profile.status|default:'' }}" maxlength="100" 
+                                       placeholder="Введите новый статус" required pattern=".{1,100}" 
+                                       title="Статус должен быть от 1 до 100 символов">
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Сохранить</button>
+                            </div>
                         </form>
                         <form method="post" enctype="multipart/form-data" action="{% url 'store:upload_photo' %}" class="photo-upload-form mt-3">
                             {% csrf_token %}
-                            <input type="file" name="photo" class="photo-input" accept="image/*" required>
-                            <button type="submit" class="upload-photo-btn">Обновить фото</button>
+                            <div class="input-group">
+                                <input type="file" name="photo" class="form-control photo-input" accept="image/*" required>
+                                <button type="submit" class="btn btn-primary">Обновить фото</button>
+                            </div>
                         </form>
                     {% endif %}
                 </div>
@@ -47,7 +56,7 @@
         <section class="category mb-5">
             <h2>Музыка автора</h2>
             <div class="songs-container position-relative">
-                <button class="scroll-button left" onclick="scrollSongs('left', 'user-songs')">❮</button>
+                <button class="scroll-button left" onclick="scrollSongs('left', 'user-songs')" aria-label="Прокрутить влево">❮</button>
                 <div class="songs" id="user-songs">
                     {% for song in songs %}
                         <div class="song-item" data-song-id="{{ song.id }}">
@@ -60,16 +69,21 @@
                                 <div class="song-controls">
                                     <button class="like-button {% if request.user in song.likes.all %}liked{% endif %}" 
                                             data-song-id="{{ song.id }}" 
-                                            data-likes="{{ song.total_likes }}">
+                                            data-likes="{{ song.total_likes }}"
+                                            aria-label="Лайк">
                                         <i class="bi bi-heart-fill"></i>
                                     </button>
                                     <button class="play-button" 
                                             data-song-id="{{ song.id }}" 
                                             data-song-url="{{ song.path.url }}" 
-                                            data-song-title="{{ song.title }} - {{ song.author.username }}">
+                                            data-song-title="{{ song.title }} - {{ song.author.username }}"
+                                            aria-label="Воспроизвести">
                                         <i class="bi bi-play-fill"></i>
                                     </button>
-                                    <button class="buy-button" title="Добавить в корзину" onclick="location.href='{% url 'store:buy_song' song.id %}'">
+                                    <button class="buy-button" 
+                                            title="Добавить в корзину" 
+                                            onclick="location.href='{% url 'store:buy_song' song.id %}'"
+                                            aria-label="Купить">
                                         <i class="bi bi-cart-plus"></i>
                                     </button>
                                 </div>
@@ -82,13 +96,34 @@
                                 </div>
                                 {% if request.user == profile.user %}
                                     <div class="mt-2">
-                                        <a href="{% url 'store:edit_music' song.id %}" class="btn btn-warning">
+                                        <a href="{% url 'store:edit_music' song.id %}" class="btn btn-warning btn-sm" aria-label="Редактировать песню">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a href="{% url 'store:delete_music' song.id %}" class="btn btn-danger"
-                                           onclick="return confirm('Вы уверены, что хотите удалить «{{ song.title }}»?');">
+                                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" 
+                                                data-bs-target="#deleteModal-{{ song.id }}" aria-label="Удалить песню">
                                             <i class="bi bi-trash"></i>
-                                        </a>
+                                        </button>
+                                    </div>
+                                    <!-- Модальное окно для подтверждения удаления -->
+                                    <div class="modal fade" id="deleteModal-{{ song.id }}" tabindex="-1" aria-labelledby="deleteModalLabel-{{ song.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteModalLabel-{{ song.id }}">Подтверждение удаления</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Вы уверены, что хотите удалить «{{ song.title }}»?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                                    <form method="post" action="{% url 'store:delete_music' song.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger">Удалить</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 {% endif %}
                             </div>
@@ -97,11 +132,11 @@
                         <p>У этого пользователя ещё нет добавленных песен.</p>
                     {% endfor %}
                 </div>
-                <button class="scroll-button right" onclick="scrollSongs('right', 'user-songs')">❯</button>
+                <button class="scroll-button right" onclick="scrollSongs('right', 'user-songs')" aria-label="Прокрутить вправо">❯</button>
             </div>
             {% if request.user == profile.user %}
                 <div class="mt-3 text-center">
-                    <a href="{% url 'store:add_music' %}" class="buy-button btn">Добавить песню</a>
+                    <a href="{% url 'store:add_music' %}" class="btn btn-primary">Добавить песню</a>
                 </div>
             {% endif %}
         </section>
@@ -109,7 +144,7 @@
         <section class="category mb-5">
             <h2>Понравившиеся песни</h2>
             <div class="songs-container position-relative">
-                <button class="scroll-button left" onclick="scrollSongs('left', 'liked-songs')">❮</button>
+                <button class="scroll-button left" onclick="scrollSongs('left', 'liked-songs')" aria-label="Прокрутить влево">❮</button>
                 <div class="songs" id="liked-songs">
                     {% for song in liked_songs %}
                         <div class="song-item" data-song-id="{{ song.id }}">
@@ -122,16 +157,21 @@
                                 <div class="song-controls">
                                     <button class="like-button {% if request.user in song.likes.all %}liked{% endif %}" 
                                             data-song-id="{{ song.id }}" 
-                                            data-likes="{{ song.total_likes }}">
+                                            data-likes="{{ song.total_likes }}"
+                                            aria-label="Лайк">
                                         <i class="bi bi-heart-fill"></i>
                                     </button>
                                     <button class="play-button" 
                                             data-song-id="{{ song.id }}" 
                                             data-song-url="{{ song.path.url }}" 
-                                            data-song-title="{{ song.title }} - {{ song.author.username }}">
+                                            data-song-title="{{ song.title }} - {{ song.author.username }}"
+                                            aria-label="Воспроизвести">
                                         <i class="bi bi-play-fill"></i>
                                     </button>
-                                    <button class="buy-button" title="Добавить в корзину" onclick="location.href='{% url 'store:buy_song' song.id %}'">
+                                    <button class="buy-button" 
+                                            title="Добавить в корзину" 
+                                            onclick="location.href='{% url 'store:buy_song' song.id %}'"
+                                            aria-label="Купить">
                                         <i class="bi bi-cart-plus"></i>
                                     </button>
                                 </div>
@@ -150,7 +190,7 @@
                         <p>У этого пользователя ещё нет понравившихся песен.</p>
                     {% endfor %}
                 </div>
-                <button class="scroll-button right" onclick="scrollSongs('right', 'liked-songs')">❯</button>
+                <button class="scroll-button right" onclick="scrollSongs('right', 'liked-songs')" aria-label="Прокрутить вправо">❯</button>
             </div>
         </section>
     </div>
@@ -160,18 +200,41 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const songsData = {{ songs_json|safe }};
-            console.log('Profile Songs Data:', songsData);  // Отладочный вывод для проверки данных
+            console.log('Profile Songs Data:', songsData);
             if (songsData.length === 0) {
                 console.warn('No songs available to play.');
             }
             Player.init(songsData);
+
+            // Валидация формы загрузки фото
+            document.querySelector('.photo-upload-form').addEventListener('submit', function(e) {
+                const fileInput = document.querySelector('.photo-input');
+                const file = fileInput.files[0];
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (file && file.size > maxSize) {
+                    e.preventDefault();
+                    alert('Файл слишком большой. Максимальный размер: 5MB.');
+                }
+                if (file && !file.type.startsWith('image/')) {
+                    e.preventDefault();
+                    alert('Пожалуйста, выберите изображение.');
+                }
+            });
         });
 
         function scrollSongs(direction, containerId) {
             const container = document.getElementById(containerId);
             const scrollAmount = container.offsetWidth * 0.8;
+            const maxScroll = container.scrollWidth - container.offsetWidth;
+            let newScrollLeft = direction === 'left' 
+                ? container.scrollLeft - scrollAmount 
+                : container.scrollLeft + scrollAmount;
+            
+            if (newScrollLeft < 0) newScrollLeft = 0;
+            if (newScrollLeft > maxScroll) newScrollLeft = maxScroll;
+            
             container.scroll({
-                left: direction === 'left' ? container.scrollLeft - scrollAmount : container.scrollLeft + scrollAmount,
+                left: newScrollLeft,
                 behavior: 'smooth'
             });
         }

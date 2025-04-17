@@ -38,12 +38,14 @@
                                             aria-label="Воспроизвести">
                                         <i class="bi bi-play-fill"></i>
                                     </button>
-                                    <button class="buy-button" 
-                                            title="Купить" 
-                                            onclick="location.href='{% url 'store:buy_song' song.id %}'"
-                                            aria-label="Купить">
-                                        <i class="bi bi-cart-plus"></i>
-                                    </button>
+                                    <form action="{% url 'store:add_to_cart' song.id %}" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="buy-button" 
+                                                title="Добавить в корзину" 
+                                                aria-label="Добавить в корзину">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                             <div class="song-info">
@@ -94,12 +96,14 @@
                                             aria-label="Воспроизвести">
                                         <i class="bi bi-play-fill"></i>
                                     </button>
-                                    <button class="buy-button" 
-                                            title="Купить" 
-                                            onclick="location.href='{% url 'store:buy_song' song.id %}'"
-                                            aria-label="Купить">
-                                        <i class="bi bi-cart-plus"></i>
-                                    </button>
+                                    <form action="{% url 'store:add_to_cart' song.id %}" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="buy-button" 
+                                                title="Добавить в корзину" 
+                                                aria-label="Добавить в корзину">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                             <div class="song-info">

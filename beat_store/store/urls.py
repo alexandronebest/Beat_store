@@ -20,6 +20,10 @@ urlpatterns = [
     path('buy/<int:song_id>/', views.buy_song, name='buy_song'),
     path('playlist/add/<int:song_id>/', views.add_to_playlist, name='add_to_playlist'),
     path('playlist/', views.playlist_view, name='playlist'),
+    path('cart/', views.cart_view, name='cart'),
+    path('cart/add/<int:song_id>/', views.add_to_cart, name='add_to_cart'),  # Добавлен маршрут
+    path('cart/remove/<int:song_id>/', views.remove_from_cart, name='remove_from_cart'),
+    path('cart/checkout/', views.checkout, name='checkout'),
     path('accounts/login/', LoginView.as_view(
         template_name='store/login.html',
         redirect_authenticated_user=True,
