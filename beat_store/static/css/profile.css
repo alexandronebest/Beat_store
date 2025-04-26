@@ -1,25 +1,59 @@
 /* profile.css */
 
-/* Секция профиля */
+/* Определение переменных для цветов и стилей */
+:root {
+  --footer-bg: #1a1a1a;
+  --primary-color: #4CAF50; /* Зелёный для общих элементов, как в style.css */
+  --profile-accent: #FFC107; /* Жёлтый для акцентов профиля */
+  --dark-bg: #1a1a1a;
+  --light-bg: #f5f5f5;
+  --text-dark: #000000;
+  --text-light: #ffffff;
+  --close-button-color: #ffffff;
+  --transition: all 0.3s ease;
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.15);
+  --like-color: rgb(255, 0, 0);
+  --cart-color: #fefe02;
+  --highlight-color: #ffffff;
+}
+
+/* Сброс стилей */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Стили для секции профиля */
 .profile-section {
   background: var(--text-light);
   border-radius: 20px;
   box-shadow: var(--shadow-md);
   padding: 2rem;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
 /* Заголовок профиля */
+.profile-title {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  letter-spacing: 0.5px;
+}
+
+/* Контейнер заголовка профиля */
 .profile-header {
   display: flex;
-  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 2rem;
-  align-items: center;
+  flex-wrap: wrap;
 }
 
 /* Контейнер изображения профиля */
 .profile-image-container {
-  flex: 0 0 150px;
   position: relative;
   width: 150px;
   height: 150px;
@@ -38,29 +72,16 @@
 /* Детали профиля */
 .profile-details {
   flex: 1;
-  min-width: 200px;
-}
-
-/* Заголовок профиля */
-.profile-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  margin-bottom: 1rem;
+  min-width: 250px;
 }
 
 /* Баланс профиля */
 .profile-balance {
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
   color: var(--text-dark);
   margin-bottom: 1rem;
-}
-
-.profile-balance .btn-primary {
-  padding: 0.4rem 1rem;
-  font-size: 0.9rem;
-  border-radius: 50px;
 }
 
 /* Статистика профиля */
@@ -72,6 +93,7 @@
 }
 
 .profile-stats span {
+  font-family: 'Montserrat', sans-serif;
   font-size: 1rem;
   font-weight: 500;
   color: var(--text-dark);
@@ -80,93 +102,382 @@
   gap: 0.5rem;
 }
 
-.profile-stats .bi {
-  color: var(--primary-color);
+.profile-stats i {
+  color: var(--profile-accent); /* Жёлтый для иконок статистики */
   font-size: 1.2rem;
 }
 
 /* Статус профиля */
 .profile-status {
-  font-size: 1rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1rem;
   font-style: italic;
   color: #666;
   margin-bottom: 1rem;
 }
 
-/* Кнопка редактирования статуса */
-.edit-status-btn {
-  background: none;
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
-  padding: 0.5rem 1.5rem;
+/* Кнопка редактирования профиля */
+.edit-profile-btn {
+  background: var(--profile-accent); /* Жёлтый для кнопки редактирования */
+  color: var(--text-light);
+  border: none;
   border-radius: 50px;
+  padding: 0.6rem 1.5rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
   font-weight: 600;
+  box-shadow: var(--shadow-sm);
   transition: var(--transition);
 }
 
-.edit-status-btn:hover {
-  background: var(--primary-color);
+.edit-profile-btn:hover {
+  background: #ff8c00; /* Тёмный жёлтый для ховера */
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+}
+
+/* Форма профиля */
+.profile-form {
+  background: var(--light-bg);
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  margin-top: 1rem;
+}
+
+.profile-form.hidden {
+  display: none;
+}
+
+.profile-form .form-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.profile-form input,
+.profile-form textarea {
+  border-radius: 10px;
+  border: 2px solid var(--profile-accent); /* Жёлтые границы формы */
+  font-family: 'Montserrat', sans-serif;
+  padding: 0.6rem 1rem;
+  width: 100%;
+  transition: var(--transition);
+}
+
+.profile-form input:focus,
+.profile-form textarea:focus {
+  border-color: #ff8c00;
+  box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+  outline: none;
+}
+
+.profile-form button {
+  background: var(--profile-accent); /* Жёлтая кнопка в форме */
   color: var(--text-light);
+  border: none;
+  border-radius: 50px;
+  padding: 0.6rem 1.5rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.profile-form button:hover {
+  background: #ff8c00;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+}
+
+/* Контейнер песен */
+.songs-container {
+  position: relative;
+  user-select: none;
+  padding: 0 60px;
+}
+
+/* Список песен */
+.songs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 1rem 0;
+  scroll-behavior: smooth;
+  gap: 1rem;
+  touch-action: pan-x;
+}
+
+.songs::-webkit-scrollbar {
+  display: none;
+}
+
+/* Элемент песни */
+.song-item {
+  flex: 0 0 200px;
+  background: var(--text-light);
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  cursor: pointer;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+.song-item:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Контейнер изображения песни */
+.song-image-container {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+}
+
+/* Изображение песни */
+.song-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 15px 15px 0 0;
+}
+
+/* Элементы управления песней */
+.song-controls {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 50px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.song-item:hover .song-controls {
+  opacity: 1;
+}
+
+/* Кнопка лайка */
+.song-controls .like-button {
+  position: relative;
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 2.1rem;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.song-controls .like-button::after {
+  content: attr(data-likes);
+  position: absolute;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-light);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.song-controls .like-button.liked {
+  color: var(--like-color);
+}
+
+.song-controls .like-button:hover {
+  color: var(--like-color);
+  filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.6));
+}
+
+/* Кнопка воспроизведения */
+.song-controls .play-button {
+  background: var(--primary-color); /* Зелёный, как в style.css */
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  color: var(--text-light);
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.song-controls .play-button:hover {
+  background: #388e3c; /* Тёмный зелёный для ховера */
+  transform: scale(1.15);
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.8);
+}
+
+/* Кнопка покупки */
+.song-controls .buy-button {
+  background: var(--cart-color);
+  border: none;
+  border-radius: 50%;
+  color: var(--text-dark);
+  font-size: 1.6rem;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.song-controls .buy-button:hover {
+  background: #ffca28;
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.6));
+}
+
+/* Информация о песне */
+.song-info {
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Название песни */
+.song-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Автор песни */
+.song-author {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ссылка на автора */
+.song-author-link {
+  color: var(--primary-color); /* Зелёный, как в style.css */
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.song-author-link:hover {
+  text-decoration: underline;
+  color: #388e3c;
+}
+
+/* Кнопки редактирования и удаления */
+.btn-warning {
+  border-radius: 50px;
+  padding: 0.4rem 1rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: var(--profile-accent); /* Жёлтый для редактирования песни */
+  border: none;
+  color: var(--text-light);
+  transition: var(--transition);
+}
+
+.btn-warning:hover {
+  background: #ff8c00;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+}
+
+.btn-danger {
+  border-radius: 50px;
+  padding: 0.4rem 1rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: var(--like-color);
+  border: none;
+  color: var(--text-light);
+  transition: var(--transition);
+}
+
+.btn-danger:hover {
+  background: #d32f2f;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4);
+}
+
+/* Кнопка добавления песни и пополнения баланса */
+.btn-primary {
+  background: var(--primary-color); /* Зелёный, как в style.css */
+  border: none;
+  border-radius: 50px;
+  padding: 0.6rem 1.5rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-light);
+  transition: var(--transition);
+}
+
+.btn-primary:hover {
+  background: #388e3c;
   transform: translateY(-3px);
   box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
 }
 
-/* Форма статуса */
-.status-form {
-  max-width: 500px;
-}
-
-.status-form .input-group {
-  border-radius: 50px;
-  overflow: hidden;
-}
-
-.status-form .form-control {
-  border: 2px solid var(--primary-color);
-  border-right: none;
-  border-radius: 50px 0 0 50px;
-  padding: 0.6rem 1rem;
-  font-size: 0.95rem;
+/* Кнопки прокрутки */
+.scroll-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--primary-color); /* Зелёный для кнопок прокрутки */
+  width: 45px;
+  height: 45px;
+  box-shadow: var(--shadow-md);
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
   transition: var(--transition);
+  z-index: 10;
 }
 
-.status-form .form-control:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
-  outline: none;
+.scroll-button.left {
+  left: 10px;
 }
 
-.status-form .btn-primary {
-  border-radius: 0 50px 50px 0;
-  padding: 0.6rem 1.5rem;
-  font-size: 0.95rem;
+.scroll-button.right {
+  right: 10px;
 }
 
-/* Форма загрузки фото */
-.photo-upload-form {
-  max-width: 500px;
+.scroll-button:hover {
+  background: var(--primary-color);
+  color: var(--text-light);
+  transform: translateY(-50%) scale(1.1);
 }
 
-.photo-upload-form .input-group {
-  border-radius: 50px;
-  overflow: hidden;
-}
-
-.photo-upload-form .form-control {
-  border: 2px solid var(--primary-color);
-  border-right: none;
-  border-radius: 50px 0 0 50px;
-  padding: 0.6rem 1rem;
-  font-size: 0.95rem;
-}
-
-.photo-upload-form .btn-primary {
-  border-radius: 0 50px 50px 0;
-  padding: 0.6rem 1.5rem;
-  font-size: 0.95rem;
-}
-
-/* Модальное окно удаления */
+/* Модальное окно */
 .modal-content {
   border-radius: 15px;
   box-shadow: var(--shadow-md);
@@ -178,109 +489,184 @@
 }
 
 .modal-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: var(--text-dark);
 }
 
 .modal-body {
+  font-family: 'Montserrat', sans-serif;
   font-size: 1rem;
   color: var(--text-dark);
 }
 
 .modal-footer .btn-secondary {
   border-radius: 50px;
-  padding: 0.5rem 1.5rem;
-  font-size: 0.95rem;
+  background: #666;
+  border: none;
+  color: var(--text-light);
+  transition: var(--transition);
+}
+
+.modal-footer .btn-secondary:hover {
+  background: #555;
+  transform: translateY(-2px);
 }
 
 .modal-footer .btn-danger {
   border-radius: 50px;
-  padding: 0.5rem 1.5rem;
-  font-size: 0.95rem;
+  background: var(--like-color);
+  border: none;
+  color: var(--text-light);
+  transition: var(--transition);
 }
 
-/* Скрытие формы статуса */
-.hidden {
-  display: none;
+.modal-footer .btn-danger:hover {
+  background: #d32f2f;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4);
 }
 
-/* Адаптивность */
+/* Медиа-запросы для адаптивности */
 @media (max-width: 768px) {
   .profile-header {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
   }
 
   .profile-image-container {
-      flex: 0 0 120px;
-      width: 120px;
-      height: 120px;
-  }
-
-  .profile-details {
-      min-width: 0;
+    width: 120px;
+    height: 120px;
   }
 
   .profile-title {
-      font-size: 1.8rem;
+    font-size: 2rem;
+    text-align: center;
   }
 
   .profile-stats {
-      justify-content: center;
+    justify-content: center;
   }
 
-  .status-form .input-group,
-  .photo-upload-form .input-group {
-      flex-direction: column;
-      gap: 0.5rem;
+  .song-item {
+    flex: 0 0 160px;
   }
 
-  .status-form .form-control,
-  .photo-upload-form .form-control {
-      border: 2px solid var(--primary-color);
-      border-radius: 50px;
-      padding: 0.5rem 1rem;
+  .song-title {
+    font-size: 1rem;
   }
 
-  .status-form .btn-primary,
-  .photo-upload-form .btn-primary {
-      border-radius: 50px;
-      padding: 0.5rem 1.5rem;
-      width: 100%;
+  .scroll-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .song-controls {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .song-controls .play-button {
+    width: 45px;
+    height: 45px;
+    font-size: 1.6rem;
+  }
+
+  .song-controls .like-button {
+    font-size: 1.3rem;
+  }
+
+  .song-controls .buy-button {
+    font-size: 1.4rem;
   }
 }
 
 @media (max-width: 576px) {
-  .profile-section {
-      padding: 1.5rem;
-  }
-
   .profile-image-container {
-      flex: 0 0 100px;
-      width: 100px;
-      height: 100px;
+    width: 100px;
+    height: 100px;
   }
 
   .profile-title {
-      font-size: 1.5rem;
-  }
-
-  .profile-balance {
-      font-size: 1rem;
+    font-size: 1.8rem;
   }
 
   .profile-stats span {
-      font-size: 0.9rem;
+    font-size: 0.9rem;
   }
 
-  .profile-stats .bi {
-      font-size: 1rem;
+  .profile-status {
+    font-size: 1rem;
   }
 
-  .edit-status-btn {
-      padding: 0.4rem 1rem;
-      font-size: 0.9rem;
+  .song-item {
+    flex: 0 0 140px;
+  }
+
+  .song-title {
+    font-size: 0.9rem;
+  }
+
+  .song-author {
+    font-size: 0.8rem;
+  }
+
+  .song-controls {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .song-controls .play-button {
+    width: 40px;
+    height: 40px;
+    font-size: 1.4rem;
+  }
+
+  .song-controls .like-button {
+    font-size: 1.2rem;
+  }
+
+  .song-controls .buy-button {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .profile-image-container {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profile-title {
+    font-size: 1.5rem;
+  }
+
+  .profile-stats span {
+    font-size: 0.8rem;
+  }
+
+  .song-item {
+    flex: 0 0 120px;
+  }
+
+  .song-controls {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .song-controls .play-button {
+    width: 35px;
+    height: 35px;
+    font-size: 1.2rem;
+  }
+
+  .song-controls .like-button {
+    font-size: 1rem;
+  }
+
+  .song-controls .buy-button {
+    font-size: 1.1rem;
   }
 }
