@@ -3,54 +3,54 @@
 {% block title %}Корзина{% endblock %}
 
 {% block content %}
-    <main class="container my-4">
-        <h2>Корзина</h2>
-        <div class="profile-details">
-            <h1 class="profile-title">{{ profile.user.username }}</h1>
-            {% if request.user == profile.user %}
-                <p class="profile-balance"><strong>Баланс:</strong> ₽{{ request.user.balance }} <a href="{% url 'store:top_up_balance' %}" class="btn btn-primary btn-sm ms-2">Пополнить</a></p>
-            {% endif %}
-        </div>
+<main class="container my-4">
+    <h2>Корзина</h2>
+    <div class="profile-details mb-4">
+        <h1 class="profile-title">{{ profile.user.username }}</h1>
+        {% if request.user == profile.user %}
+            <p class="profile-balance"><strong>Баланс:</strong> ₽{{ request.user.balance }} <a href="{% url 'store:top_up_balance' %}" class="btn btn-primary btn-sm ms-2">Пополнить</a></p>
+        {% endif %}
+    </div>
 
-        <div class="cart-items">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-
-            {% if songs %}
-                <ul class="list-group">
-                    {% for song in songs %}
-                        <li class="list-group-item cart-item d-flex justify-content-between align-items-center">
-                            <div class="cart-song-details d-flex align-items-center">
-                                <img src="{{ song.cover.url|default:'/static/images/music_img.jpeg' }}" alt="{{ song.title }}" class="cart-song-image me-3" style="width: 60px; height: 60px; object-fit: cover;" />
-                                <div>
-                                    <span>{{ song.title }}</span> by <span>{{ song.author.username }}</span>
-                                </div>
-                            </div>
-                            <div class="cart-song-actions d-flex align-items-center">
-                                <span class="me-3">₽{{ song.price }}</span>
-                                <form action="{% url 'store:buy_song' song.id %}" method="post" class="me-2">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-success btn-sm">Купить</button>
-                                </form>
-                                <form action="{% url 'store:remove_from_cart' song.id %}" method="post">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
-                                </form>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <div class="cart-summary mt-4">
-                    <p><strong>Итого:</strong> ₽{{ total_price }}</p>
+    <div class="cart-items">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-            {% else %}
-                <p>Корзина пуста.</p>
-            {% endif %}
-        </div>
-    </main>
+            {% endfor %}
+        {% endif %}
+
+        {% if songs %}
+            <ul class="list-group">
+                {% for song in songs %}
+                    <li class="list-group-item cart-item d-flex justify-content-between align-items-center flex-wrap">
+                        <div class="cart-song-details d-flex align-items-center">
+                            <img src="{{ song.cover.url|default:'/static/images/music_img.jpeg' }}" alt="{{ song.title }}" class="cart-song-image me-3" style="width: 60px; height: 60px; object-fit: cover;" />
+                            <div>
+                                <span>{{ song.title }}</span> by <span>{{ song.author.username }}</span>
+                            </div>
+                        </div>
+                        <div class="cart-song-actions d-flex align-items-center gap-3 mt-2 mt-md-0">
+                            <span class="me-3">₽{{ song.price }}</span>
+                            <form action="{% url 'store:buy_song' song.id %}" method="get" class="me-2">
+                                <button type="submit" class="btn btn-success btn-sm">Купить</button>
+                            </form>
+                            <form action="{% url 'store:remove_from_cart' song.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="cart-summary mt-4">
+                <p><strong>Итого:</strong> ₽{{ total_price }}</p>
+            </div>
+        {% else %}
+            <p class="text-muted">Корзина пуста.</p>
+        {% endif %}
+    </div>
+</main>
 {% endblock %}

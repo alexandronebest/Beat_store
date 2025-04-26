@@ -307,7 +307,6 @@ def play_song(request, song_id):
         return JsonResponse({'error': 'Внутренняя ошибка сервера'}, status=500)
 
 @login_required
-@require_POST
 @csrf_protect
 def buy_song(request, song_id):
     try:
@@ -318,31 +317,37 @@ def buy_song(request, song_id):
             messages.info(request, f'Песня "{song.title}" уже куплена!')
             return redirect('store:cart')
 
-        if user.balance >= song.price:
-            Transaction.objects.create(
-                buyer=user,
-                song=song,
-                amount=song.price,
-                is_successful=True
-            )
-            user.balance -= song.price
-            song.author.balance += song.price
-            user.save(update_fields=['balance'])
-            song.author.save(update_fields=['balance'])
+        if request.method == 'POST':
+            if user.balance >= song.price:
+                Transaction.objects.create(
+                    buyer=user,
+                    song=song,
+                    amount=song.price,
+                    is_successful=True
+                )
+                user.balance -= song.price
+                song.author.balance += song.price
+                user.save(update_fields=['balance'])
+                song.author.save(update_fields=['balance'])
 
-            cart = request.session.get('cart', [])
-            if song_id in cart:
-                cart.remove(song_id)
-                request.session['cart'] = cart
-                request.session.modified = True
+                cart = request.session.get('cart', [])
+                if song_id in cart:
+                    cart.remove(song_id)
+                    request.session['cart'] = cart
+                    request.session.modified = True
 
-            logger.info(f"Пользователь {user.username} купил песню {song_id} за {song.price}")
-            messages.success(request, f'Песня "{song.title}" успешно куплена!')
-            return redirect('store:cart')
-        else:
-            logger.warning(f"У пользователя {user.username} недостаточно средств для покупки песни {song_id}")
-            messages.error(request, 'Недостаточно средств на балансе!')
-            return redirect('store:cart')
+                logger.info(f"Пользователь {user.username} купил песню {song_id} за {song.price}")
+                messages.success(request, f'Песня "{song.title}" успешно куплена!')
+                return redirect('store:cart')
+            else:
+                logger.warning(f"У пользователя {user.username} недостаточно средств для покупки песни {song_id}")
+                messages.error(request, 'Недостаточно средств на балансе!')
+                return redirect('store:cart')
+        
+        return render(request, 'store/buy_song.html', {
+            'song': song,
+            'user_balance': user.balance
+        })
     except Exception as e:
         logger.error(f"Ошибка в buy_song: {str(e)}")
         messages.error(request, 'Произошла ошибка при покупке.')
@@ -488,7 +493,11 @@ def add_to_cart(request, song_id):
             }, status=200)
     except Exception as e:
         logger.error(f"Ошибка в add_to_cart: {str(e)}")
-        return JsonResponse({'error': 'Внутренняя ошибка сервера'}, status=500)
+        return JsonResponse({
+            'success': False,
+            'message': 'Произошла ошибка при добавлении в корзину.',
+            'error': str(e)
+        }, status=500)
 
 @login_required
 def cart_status(request, song_id):

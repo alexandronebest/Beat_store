@@ -3,14 +3,14 @@
   --primary-color: #4CAF50;
   --dark-bg: #1a1a1a;
   --light-bg: #f5f5f5;
-  --text-dark: #ffffff;
+  --text-dark: #000000;
   --text-light: #fff;
   --close-button-color: #ffffff;
   --transition: all 0.3s ease;
   --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.15);
   --like-color: rgb(255, 0, 0);
-  --cart-color: #FFC107; /* Yellow for cart button */
+  --cart-color: #fefe02;
 }
 
 *, *::before, *::after {
@@ -275,8 +275,7 @@ main {
 
 .song-controls .like-button:hover {
   color: var(--like-color);
-  transform: scale(1.15);
-  filter: drop-shadow(0 0 8px rgba(255, 204, 0, 0.6));
+  flop-shadow(0 0 8px rgba(255, 204, 0, 0.6));
 }
 
 .song-controls .play-button {
@@ -479,7 +478,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .player-section audio {
@@ -488,8 +487,7 @@ main {
 
 .track-info {
   flex: 1;
-  min-width: 180px;
-  max-width: 300px;
+  min-width: 150px;
   overflow: hidden;
 }
 
@@ -502,12 +500,12 @@ main {
 }
 
 .controls {
-  flex: 2;
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
-  min-width: 300px;
+  gap: 0.75rem;
+  min-width: 150px;
 }
 
 .btn-icon {
@@ -529,11 +527,11 @@ main {
 }
 
 .progress-container {
-  width: 300px;
-  margin-left: 1rem;
+  flex: 1;
+  max-width: 300px;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 #progress-bar {
@@ -558,7 +556,7 @@ main {
 
 #current-time, #total-time {
   font-size: 0.9rem;
-  min-width: 45px;
+  min-width: 40px;
   text-align: center;
   color: var(--text-light);
 }
@@ -569,14 +567,7 @@ main {
   justify-content: flex-end;
   align-items: center;
   gap: 0.5rem;
-  min-width: 180px;
-  max-width: 250px;
-  flex-wrap: nowrap;
-}
-
-.extra-controls > * {
-  display: inline-flex;
-  align-items: center;
+  min-width: 150px;
 }
 
 #volume-slider {
@@ -617,7 +608,7 @@ main {
   color: var(--like-color);
 }
 
-.song-price {
+#song-price {
   color: var(--text-light);
   font-size: 0.9rem;
   font-weight: 600;
@@ -625,8 +616,8 @@ main {
   padding: 5px 10px;
   border-radius: 15px;
   white-space: nowrap;
-  max-width: 80px;
   text-align: center;
+  min-width: 60px;
 }
 
 /* Медиа-запросы */
@@ -656,11 +647,10 @@ main {
 
   .player-container {
     flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
+    align-items: stretch;gap: 0.5rem;
   }
 
-  .track-info, .controls, .extra-controls {
+  .track-info, .controls, .progress-container, .extra-controls {
     flex: none;
     justify-content: center;
     margin: 0.5rem 0;
@@ -669,8 +659,7 @@ main {
   }
 
   .progress-container {
-    width: 100%;
-    max-width: 250px;
+    max-width: 100%;
   }
 
   .song-controls {
@@ -692,10 +681,10 @@ main {
     font-size: 1.4rem;
   }
 
-  .song-price {
+  #song-price {
     font-size: 0.8rem;
     padding: 4px 8px;
-    max-width: 70px;
+    min-width: 50px;
   }
 }
 
@@ -744,10 +733,10 @@ main {
     font-size: 1.4rem;
   }
 
-  .song-price {
+  #song-price {
     font-size: 0.75rem;
     padding: 3px 6px;
-    max-width: 60px;
+    min-width: 45px;
   }
 
   #volume-slider {
@@ -761,6 +750,7 @@ main {
   .extra-controls {
     gap: 0.3rem;
     justify-content: center;
+    flex-wrap: wrap;
   }
 }
 
@@ -775,8 +765,7 @@ main {
   }
 
   .progress-container {
-    width: 100%;
-    max-width: 200px;
+    max-width: 100%;
   }
 
   .btn-icon {
@@ -806,10 +795,10 @@ main {
     font-size: 1.1rem;
   }
 
-  .song-price {
+  #song-price {
     font-size: 0.7rem;
     padding: 3px 5px;
-    max-width: 50px;
+    min-width: 40px;
   }
 
   #volume-slider {

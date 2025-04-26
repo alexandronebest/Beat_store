@@ -1,22 +1,24 @@
 {% extends 'store/base.html' %}
-   {% load static %}
+{% load static %}
 
-   {% block title %}Купить песню{% endblock %}
+{% block title %}Купить песню{% endblock %}
 
-   {% block content %}
-       <main class="container my-4">
-           <h2>Купить песню: {{ song.title }}</h2>
-           <p>Автор: {{ song.author.username }}</p>
-           <p>Цена: ₽{{ song.price }}</p>
-           <p>Ваш баланс: ₽{{ user_balance }}</p>
-           {% if user_balance >= song.price %}
-               <form method="post">
-                   {% csrf_token %}
-                   <button type="submit" class="btn btn-primary">Купить</button>
-               </form>
-           {% else %}
-               <p class="text-danger">Недостаточно средств на балансе!</p>
-           {% endif %}
-           <a href="{% url 'store:music_list' %}" class="btn btn-secondary mt-3">Вернуться к списку</a>
-       </main>
-   {% endblock %}
+{% block content %}
+<main class="container my-4">
+    <h2>Купить песню: {{ song.title }}</h2>
+    <div class="card p-4">
+        <p><strong>Автор:</strong> {{ song.author.username }}</p>
+        <p><strong>Цена:</strong> ₽{{ song.price }}</p>
+        <p><strong>Ваш баланс:</strong> ₽{{ user_balance }}</p>
+        {% if user_balance >= song.price %}
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Купить</button>
+            </form>
+        {% else %}
+            <p class="text-danger">Недостаточно средств на балансе! <a href="{% url 'store:top_up_balance' %}" class="btn btn-sm btn-warning">Пополнить баланс</a></p>
+        {% endif %}
+        <a href="{% url 'store:music_list' %}" class="btn btn-secondary mt-3">Вернуться к списку</a>
+    </div>
+</main>
+{% endblock %}

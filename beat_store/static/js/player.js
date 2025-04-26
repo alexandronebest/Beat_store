@@ -43,7 +43,7 @@ const Player = (function () {
             return;
         }
 
-        audioPlayer.volume = localStorage.getItem('volume') || 0.5;
+        audioPlayer.volume = parseFloat(localStorage.getItem('volume')) || 0.5;
         volumeSlider.value = audioPlayer.volume;
         setupEventListeners();
         restorePlayerState();
@@ -51,18 +51,18 @@ const Player = (function () {
 
     function updatePlaylist(songsData) {
         const newSongs = songsData.map(song => ({
-            id: song.id,
+            id: parseInt(song.id),
             url: song.path,
             title: song.title,
             author: song.author,
-            likes: song.total_likes || 0,
+            likes: parseInt(song.total_likes) || 0,
             price: parseFloat(song.price) || 0,
-            plays: song.total_plays || 0
+            plays: parseInt(song.total_plays) || 0
         }));
 
-        if (playlist.length === 0 || JSON.stringify(playlist) !== JSON.stringify(newSongs)) {
+        if (JSON.stringify(playlist) !== JSON.stringify(newSongs)) {
             playlist = newSongs;
-            currentIndex = playlist.findIndex(song => song.id === currentSongId) || -1;
+            currentIndex = playlist.findIndex(song => song.id === currentSongId);
         }
     }
 
@@ -94,17 +94,14 @@ const Player = (function () {
         audioPlayer.addEventListener('timeupdate', updateProgress);
         audioPlayer.addEventListener('loadedmetadata', updateTimeDisplay);
         audioPlayer.addEventListener('ended', playNextSong);
-        audioPlayer.addEventListener('error', e => {
-            console.error('Ошибка аудио:', e);
-            playNextSong();
-        });
+        audioPlayer.addEventListener('error', handleAudioError);
 
         likeButtonPlayer.addEventListener('click', handlePlayerLikeClick);
         playPauseButton.addEventListener('click', togglePlayPause);
         prevButton.addEventListener('click', playPreviousSong);
         nextButton.addEventListener('click', playNextSong);
         volumeSlider.addEventListener('input', () => {
-            audioPlayer.volume = volumeSlider.value;
+            audioPlayer.volume = parseFloat(volumeSlider.value);
             updateMuteIcon();
             localStorage.setItem('volume', audioPlayer.volume);
         });
@@ -119,19 +116,17 @@ const Player = (function () {
     }
 
     function handlePlayClick() {
-        const songId = this.getAttribute('data-song-id');
-        const songIndex = playlist.findIndex(song => song.id === parseInt(songId, 10));
+        const songId = parseInt(this.getAttribute('data-song-id'), 10);
+        const songIndex = playlist.findIndex(song => song.id === songId);
 
         if (songIndex === -1) {
             console.error(`Песня с ID ${songId} не найдена в плейлисте`);
             return;
         }
 
-        if (currentSongId === songId) {
-            // Если это та же песня, переключаем воспроизведение/паузу
+        if (currentSongId === songId && !audioPlayer.paused) {
             togglePlayPause();
         } else {
-            // Если другая песня, запускаем её
             playSong(songIndex);
         }
     }
@@ -149,6 +144,7 @@ const Player = (function () {
                 currentIndex = songIndex;
                 currentSongDisplay.textContent = `${song.title} - ${song.author || 'Неизвестен'}`;
                 songPriceElement.textContent = `₽${song.price.toFixed(2)}`;
+                songPriceElement.dataset.songId = song.id;
                 likeButtonPlayer.dataset.likes = song.likes;
                 updatePlayerLikeState(song.id);
                 hasPlayed = false;
@@ -158,7 +154,7 @@ const Player = (function () {
             })
             .catch(err => {
                 console.error('Ошибка воспроизведения:', err);
-                playNextSong();
+                handleAudioError();
             });
     }
 
@@ -220,7 +216,7 @@ const Player = (function () {
             updatePlayPauseIcon(false);
             updateAllPlayIcons(currentSongId, false);
         }
-        savePlayerState(); // Сохраняем состояние после переключения
+        savePlayerState();
     }
 
     function toggleMute() {
@@ -273,7 +269,7 @@ const Player = (function () {
     }
 
     function handleLikeClick() {
-        const songId = this.getAttribute('data-song-id');
+        const songId = parseInt(this.getAttribute('data-song-id'), 10);
         toggleLike(songId, this, data => {
             this.dataset.likes = data.total_likes;
             if (songId === currentSongId) {
@@ -365,6 +361,7 @@ const Player = (function () {
         likeButtonPlayer.classList.toggle('liked', savedSong.liked || false);
         likeButtonPlayer.dataset.likes = savedSong.likes || 0;
         songPriceElement.textContent = `₽${song.price.toFixed(2)}`;
+        songPriceElement.dataset.songId = song.id;
         if (savedSong.isPlaying) {
             audioPlayer.play()
                 .then(() => {
@@ -388,7 +385,13 @@ const Player = (function () {
         likeButtonPlayer.classList.remove('liked');
         likeButtonPlayer.dataset.likes = '0';
         songPriceElement.textContent = '₽0.00';
+        songPriceElement.dataset.songId = '0';
         updatePlayPauseIcon(false);
+    }
+
+    function handleAudioError() {
+        console.error('Ошибка аудио, переход к следующей песне');
+        playNextSong();
     }
 
     return { init };

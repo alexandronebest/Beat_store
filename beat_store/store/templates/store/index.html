@@ -35,6 +35,7 @@
                                             data-song-id="{{ song.id }}" 
                                             data-song-url="{{ song.path.url }}" 
                                             data-song-title="{{ song.title }} - {{ song.author.username }}"
+                                            data-song-price="{{ song.price }}"
                                             aria-label="Воспроизвести">
                                         <i class="bi bi-play-fill"></i>
                                     </button>
@@ -92,6 +93,7 @@
                                             data-song-id="{{ song.id }}" 
                                             data-song-url="{{ song.path.url }}" 
                                             data-song-title="{{ song.title }} - {{ song.author.username }}"
+                                            data-song-price="{{ song.price }}"
                                             aria-label="Воспроизвести">
                                         <i class="bi bi-play-fill"></i>
                                     </button>
@@ -127,31 +129,31 @@
         <!-- Жанры -->
         <section class="category">
             <h2>Жанры</h2>
-            <div class="songs-container position-relative">
-                <button class="scroll-button left" onclick="scrollSongs('left', 'genres')" aria-label="Прокрутить влево">❮</button>
-                <div class="songs d-flex overflow-auto" id="genres">
-                    {% for genre in genres %}
-                        <div class="song-item me-3">
-                            <a href="{% url 'store:music_list' %}?genre={{ genre.id }}" class="genre-link text-decoration-none">
-                                <div class="song-info text-center">
-                                    <h3 class="song-title">{{ genre.name }}</h3>
+            <div class="row">
+                {% for genre in genres %}
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'store:music_list' %}?genre={{ genre.id }}" class="genre-link">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h5>{{ genre.name }}</h5>
                                 </div>
-                            </a>
-                        </div>
-                    {% empty %}
-                        <div class="song-item text-center">
-                            <p>Нет доступных жанров.</p>
-                        </div>
-                    {% endfor %}
-                </div>
-                <button class="scroll-button right" onclick="scrollSongs('right', 'genres')" aria-label="Прокрутить вправо">❯</button>
+                            </div>
+                        </a>
+                    </div>
+                {% empty %}
+                    <p>Жанры отсутствуют.</p>
+                {% endfor %}
             </div>
         </section>
     </main>
 {% endblock %}
 
 {% block extra_js %}
+    <script src="{% static 'js/player.js' %}"></script>
     <script>
+        const songsData = {{ songs_json|safe }};
+        Player.init(songsData);
+
         function scrollSongs(direction, containerId) {
             const container = document.getElementById(containerId);
             const scrollAmount = container.offsetWidth * 0.8;
