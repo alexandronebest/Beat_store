@@ -33,49 +33,47 @@
     </main>
 
     <!-- Плеер -->
-    <div class="player-section fixed-bottom bg-dark text-white p-3">
+    <div class="player-section fixed-bottom bg-dark text-white p-2">
         <div class="container">
-            <div class="row align-items-center flex-nowrap">
-                <div class="col-md-3 col-12 track-info">
-                    <span id="current-song" class="text-truncate">Выберите песню для воспроизведения</span>
+            <div class="player-container d-flex align-items-center flex-wrap gap-2">
+                <!-- Информация о треке -->
+                <div class="track-info flex-grow-1">
+                    <span id="current-song" class="text-truncate d-block">Выберите песню для воспроизведения</span>
                 </div>
-                <div class="col-md-4 col-12 controls-container">
-                    <div class="controls dCritical: flex justify-content-center align-items-center">
-                        <audio id="audio-player" preload="metadata">
-                            <source id="audio-source" src="" type="audio/mpeg">
-                            Ваш браузер не поддерживает аудио.
-                        </audio>
-                        <button id="prev-button" class="btn btn-outline-light btn-icon mx-2" aria-label="Предыдущая песня">
-                            <i class="bi bi-skip-backward-fill"></i>
-                        </button>
-                        <button id="play-pause-button" class="btn btn-outline-light btn-icon mx-2 btn-play" aria-label="Воспроизвести/Пауза">
-                            <i class="bi bi-play-fill"></i>
-                        </button>
-                        <button id="next-button" class="btn btn-outline-light btn-icon mx-2" aria-label="Следующая песня">
-                            <i class="bi bi-skip-forward-fill"></i>
-                        </button>
-                    </div>
+                <!-- Элементы управления -->
+                <div class="controls d-flex align-items-center justify-content-center gap-1">
+                    <audio id="audio-player" preload="metadata">
+                        <source id="audio-source" src="" type="audio/mpeg">
+                        Ваш браузер не поддерживает аудио.
+                    </audio>
+                    <button id="prev-button" class="btn btn-outline-light btn-icon" aria-label="Предыдущая песня">
+                        <i class="bi bi-skip-backward-fill"></i>
+                    </button>
+                    <button id="play-pause-button" class="btn btn-outline-light btn-icon btn-play" aria-label="Воспроизвести/Пауза">
+                        <i class="bi bi-play-fill"></i>
+                    </button>
+                    <button id="next-button" class="btn btn-outline-light btn-icon" aria-label="Следующая песня">
+                        <i class="bi bi-skip-forward-fill"></i>
+                    </button>
                 </div>
-                <div class="col-md-3 col-12 progress-container-wrapper">
-                    <div class="progress-container d-flex align-items-center">
-                        <input type="range" id="progress-bar" class="form-range me-2" min="0" max="1" step="0.01" value="0" aria-label="Прогресс воспроизведения">
-                        <span id="current-time" class="me-2">0:00</span>
-                        <span id="total-time">0:00</span>
-                    </div>
+                <!-- Прогресс-бар -->
+                <div class="progress-container d-flex align-items-center flex-grow-1 gap-1">
+                    <span id="current-time" class="time-display">0:00</span>
+                    <input type="range" id="progress-bar" class="form-range" min="0" max="1" step="0.01" value="0" aria-label="Прогресс воспроизведения">
+                    <span id="total-time" class="time-display">0:00</span>
                 </div>
-                <div class="col-md-2 col-12 extra-controls-container">
-                    <div class="extra-controls d-flex align-items-center flex-nowrap">
-                        <button id="mute-button" class="btn btn-outline-light btn-icon me-2" aria-label="Включить/Выключить звук">
-                            <i class="bi bi-volume-up-fill"></i>
-                        </button>
-                        <input type="range" id="volume-slider" class="form-range me-2" min="0" max="1" step="0.01" value="0.5" aria-label="Громкость">
-                        <button id="like-button-player" class="btn btn-outline-light btn-icon me-2" data-likes="0" aria-label="Лайк" {% if not user.is_authenticated %}disabled{% endif %}>
-                            <i class="bi bi-heart-fill"></i>
-                        </button>
-                        <button id="song-price" class="btn btn-icon text-truncate" data-song-id="0" title="Добавить в корзину" aria-label="Добавить в корзину" disabled>
-                            <i class="bi bi-cart-plus"></i> ₽0.00
-                        </button>
-                    </div>
+                <!-- Дополнительные элементы управления -->
+                <div class="extra-controls d-flex align-items-center justify-content-end gap-1 flex-shrink-0">
+                    <button id="mute-button" class="btn btn-outline-light btn-icon" aria-label="Включить/Выключить звук">
+                        <i class="bi bi-volume-up-fill"></i>
+                    </button>
+                    <input type="range" id="volume-slider" class="form-range" min="0" max="1" step="0.01" value="0.5" aria-label="Громкость">
+                    <button id="like-button-player" class="btn btn-outline-light btn-icon" data-likes="0" aria-label="Лайк" {% if not user.is_authenticated %}disabled{% endif %}>
+                        <i class="bi bi-heart-fill"></i>
+                    </button>
+                    <button id="song-price" class="btn btn-icon text-truncate" data-song-id="0" title="Добавить в корзину" aria-label="Добавить в корзину" disabled>
+                        <i class="bi bi-cart-plus"></i> ₽0.00
+                    </button>
                 </div>
             </div>
         </div>

@@ -14,7 +14,7 @@
   --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.15);
   --like-color: rgb(255, 0, 0);
   --cart-color: #fefe02;
-  --highlight-color: #ffffff; /* Новый цвет для выделения элементов */
+  --highlight-color: #ffffff;
 }
 
 /* Сброс стилей */
@@ -116,7 +116,7 @@ main {
 
 /* Имя пользователя */
 .username {
-  color: var(--highlight-color); /* Изменен цвет для контраста */
+  color: var(--highlight-color);
   font-weight: 600;
   transition: var(--transition);
 }
@@ -130,7 +130,7 @@ main {
   margin-right: 5px;
   border: none;
   padding: 0.25rem 0.75rem;
-  color: var(--highlight-color); /* Изменен цвет для контраста */
+  color: var(--highlight-color);
 }
 
 .navbar-toggler-icon {
@@ -237,7 +237,7 @@ main {
   transition: var(--transition);
   cursor: pointer;
   overflow: hidden;
-  touch-action: manipulation; /* Улучшает сенсорное взаимодействие */
+  touch-action: manipulation;
 }
 
 .song-item:hover {
@@ -518,7 +518,7 @@ main {
 /* Секция плеера */
 .player-section {
   background: linear-gradient(to right, var(--dark-bg), #2d2d2d);
-  padding: 1rem;
+  padding: 0.5rem;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -529,12 +529,12 @@ main {
 
 /* Контейнер плеера */
 .player-container {
-  max-width: 1200px;
-  margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .player-section audio {
@@ -543,13 +543,12 @@ main {
 
 /* Информация о треке */
 .track-info {
-  flex: 1;
-  min-width: 150px;
+  flex: 1 1 200px;
   overflow: hidden;
 }
 
 #current-song {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-light);
   white-space: nowrap;
   overflow: hidden;
@@ -558,12 +557,11 @@ main {
 
 /* Элементы управления */
 .controls {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.75rem;
-  min-width: 150px;
+  gap: 0.5rem;
 }
 
 /* Кнопки управления */
@@ -571,16 +569,16 @@ main {
   background: none;
   border: 1px solid var(--highlight-color);
   color: var(--highlight-color);
-  font-size: 1.3rem;
-  padding: 0.25rem;
+  font-size: 1.2rem;
+  padding: 0;
   transition: var(--transition);
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  touch-action: manipulation; /* Улучшает сенсорное взаимодействие */
+  touch-action: manipulation;
 }
 
 .btn-icon:hover {
@@ -591,13 +589,14 @@ main {
 
 /* Кнопка воспроизведения */
 .btn-play {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
+  width: 40px;
+  height: 40px;
 }
 
 /* Контейнер прогресс-бара */
 .progress-container {
-  flex: 1;
-  max-width: 300px;
+  flex: 1 1 200px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -607,8 +606,8 @@ main {
 #progress-bar {
   -webkit-appearance: none;
   width: 100%;
-  height: 6px;
-  background: rgba(255, Bookworm, 255, 0.2);
+  height: 5px;
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
   outline: none;
   transition: var(--transition);
@@ -616,8 +615,8 @@ main {
 
 #progress-bar::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   background: var(--primary-color);
   border-radius: 50%;
   cursor: pointer;
@@ -625,28 +624,26 @@ main {
 }
 
 /* Время воспроизведения */
-#current-time, #total-time {
-  font-size: 0.9rem;
-  min-width: 40px;
+.time-display {
+  font-size: 0.85rem;
+  min-width: 35px;
   text-align: center;
   color: var(--text-light);
 }
 
 /* Дополнительные элементы управления */
 .extra-controls {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
-  justify-content: flex-end;
   align-items: center;
   gap: 0.5rem;
-  min-width: 200px;
 }
 
 /* Ползунок громкости */
 #volume-slider {
   -webkit-appearance: none;
-  width: 80px;
-  height: 6px;
+  width: 60px;
+  height: 5px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
   outline: none;
@@ -655,8 +652,8 @@ main {
 
 #volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   background: var(--primary-color);
   border-radius: 50%;
   cursor: pointer;
@@ -666,34 +663,42 @@ main {
 /* Кнопка лайка в плеере */
 #like-button-player {
   background: none;
-  border: none;
+  border: 1px solid var(--highlight-color);
   color: var(--text-light);
-  font-size: 1.3rem;
-  padding: 0.25rem;
+  font-size: 1.2rem;
+  padding: 0;
   transition: var(--transition);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #like-button-player:hover {
   color: var(--like-color);
+  border-color: var(--like-color);
   transform: scale(1.1);
 }
 
 #like-button-player.liked {
   color: var(--like-color);
+  border-color: var(--like-color);
 }
 
 /* Кнопка цены/корзины */
 #song-price {
   color: var(--text-dark);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   background: var(--cart-color);
-  padding: 5px 12px;
-  border-radius: 15px;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
   white-space: nowrap;
   text-align: center;
-  min-width: 70px;
-  max-width: 100px;
+  min-width: 60px;
+  max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
   transition: var(--transition);
@@ -735,60 +740,82 @@ main {
     height: 40px;
   }
 
-  .player-container {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
+  .player-section {
+    padding: 0.4rem;
   }
 
-  .track-info, .controls, .progress-container, .extra-controls {
-    flex: 1;
-    justify-content: center;
-    margin: 0.5rem 0;
-    min-width: 0;
-    max-width: 100%;
+  .player-container {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .track-info {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+
+  .controls {
+    flex: 0 0 auto;
+    gap: 0.4rem;
   }
 
   .progress-container {
-    max-width: 100%;
+    flex: 1 1 100%;
   }
 
-  .song-controls {
-    gap: 10px;
-    padding: 10px;
+  .extra-controls {
+    flex: 0 0 auto;
+    gap: 0.4rem;
+    justify-content: center;
   }
 
-  .song-controls .play-button {
-    width: 45px;
-    height: 45px;
-    font-size: 1.6rem;
+  .btn-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 1.1rem;
   }
 
-  .song-controls .like-button {
+  .btn-play {
+    width: 38px;
+    height: 38px;
     font-size: 1.3rem;
   }
 
-  .song-controls .cart-button {
-    font-size: 1.4rem;
+  #progress-bar {
+    height: 4px;
+  }
+
+  #progress-bar::-webkit-slider-thumb {
+    width: 12px;
+    height: 12px;
+  }
+
+  #volume-slider {
+    width: 50px;
+    height: 4px;
+  }
+
+  #volume-slider::-webkit-slider-thumb {
+    width: 12px;
+    height: 12px;
+  }
+
+  .time-display {
+    font-size: 0.8rem;
+    min-width: 30px;
   }
 
   #song-price {
     font-size: 0.8rem;
-    padding: 4px 10px;
-    min-width: 60px;
-    max-width: 80px;
+    min-width: 55px;
+    max-width: 70px;
+    padding: 0.2rem 0.5rem;
   }
 
-  .extra-controls {
-    min-width: 150px;
-    gap: 0.4rem;
-  }
-
-  .btn-icon {
-    width: 35px;
-    height: 35px;
-    font-size: 1.2rem;
+  #like-button-player {
+    width: 34px;
+    height: 34px;
+    font-size: 1.1rem;
   }
 }
 
@@ -805,66 +832,50 @@ main {
     font-size: 0.8rem;
   }
 
-  .song-controls {
-    gap: 8px;
-    padding: 8px;
+  .player-section {
+    padding: 0.3rem;
   }
 
-  .song-controls .play-button {
-    width: 40px;
-    height: 40px;
-    font-size: 1.4rem;
-  }
-
-  .song-controls .like-button {
-    font-size: 1.2rem;
-  }
-
-  .song-controls .cart-button {
-    font-size: 1.3rem;
+  .player-container {
+    gap: 0.3rem;
   }
 
   #current-song {
-    font-size: 0.9rem;
-    max-width: 200px;
+    font-size: 0.85rem;
   }
 
   .btn-icon {
-    width: 30px;
-    height: 30px;
-    font-size: 1.1rem;
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
   }
 
   .btn-play {
-    font-size: 1.4rem;
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
   }
 
   #song-price {
     font-size: 0.75rem;
-    padding: 3px 8px;
     min-width: 50px;
-    max-width: 70px;
+    max-width: 65px;
+    padding: 0.2rem 0.4rem;
   }
 
   #volume-slider {
-    width: 70px;
+    width: 45px;
   }
 
   #like-button-player {
-    fontладка: 0px;
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
   }
 
-  .extra-controls {
-    min-width: 150px;
-    gap: 0.4rem;
-    justify-content: center;
-    flex-wrap: nowrap;
-  }
-
-  .player-container {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.3rem;
+  .time-display {
+    font-size: 0.75rem;
+    min-width: 28px;
   }
 }
 
@@ -875,21 +886,48 @@ main {
 
   #current-song {
     font-size: 0.8rem;
-    max-width: 150px;
   }
 
-  .progress-container {
-    max-width: 100%;
+  .player-section {
+    padding: 0.2rem;
+  }
+
+  .player-container {
+    gap: 0.2rem;
   }
 
   .btn-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 1rem;
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
   }
 
   .btn-play {
-    font-size: 1.3rem;
+    width: 34px;
+    height: 34px;
+    font-size: 1.1rem;
+  }
+
+  #song-price {
+    font-size: 0.7rem;
+    min-width: 45px;
+    max-width: 60px;
+    padding: 0.2rem 0.3rem;
+  }
+
+  #volume-slider {
+    width: 40px;
+  }
+
+  #like-button-player {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+  }
+
+  .time-display {
+    font-size: 0.7rem;
+    min-width: 25px;
   }
 
   .song-controls {
@@ -909,27 +947,5 @@ main {
 
   .song-controls .cart-button {
     font-size: 1.1rem;
-  }
-
-  #song-price {
-    font-size: 0.7rem;
-    padding: 3px 6px;
-    min-width: 45px;
-    max-width: 60px;
-  }
-
-  #volume-slider {
-    width: 60px;
-  }
-
-  #like-button-player {
-    font-size: 1rem;
-  }
-
-  .extra-controls {
-    gap: 0.2rem;
-    flex-wrap: nowrap;
-    justify-content: center;
-    min-width: 100px;
   }
 }

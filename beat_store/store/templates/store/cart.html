@@ -1,14 +1,24 @@
 {% extends 'store/base.html' %}
+{% load static %}
 
 {% block title %}Корзина{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/cart.css' %}">
+{% endblock %}
+
 {% block content %}
 <main class="container my-4">
-    <h2>Корзина</h2>
+    <h2 class="mb-4">Ваша корзина</h2>
     <div class="profile-details mb-4">
-        <h1 class="profile-title">{{ request.user.username }}</h1>
+        <h3 class="profile-title">{{ request.user.username }}</h3>
         {% if request.user.is_authenticated %}
-            <p class="profile-balance"><strong>Баланс:</strong> ₽{{ request.user.balance }} <a href="{% url 'store:top_up_balance' %}" class="btn btn-primary btn-sm ms-2">Пополнить</a></p>
+            <p class="profile-balance">
+                <strong>Баланс:</strong> ₽{{ request.user.balance|floatformat:2 }}
+                <a href="{% url 'store:top_up_balance' %}" class="btn auth-btn btn-sm ms-2">
+                    <i class="bi bi-wallet2 me-1"></i> Пополнить
+                </a>
+            </p>
         {% endif %}
     </div>
 
@@ -17,39 +27,48 @@
             {% for message in messages %}
                 <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
                 </div>
             {% endfor %}
         {% endif %}
 
         {% if songs %}
-            <ul class="list-group">
-                {% for song in songs %}
-                    <li class="list-group-item cart-item d-flex justify-content-between align-items-center flex-wrap">
-                        <div class="cart-song-details d-flex align-items-center">
-                            <img src="{{ song.cover.url|default:'/static/images/music_img.jpeg' }}" alt="{{ song.title }}" class="cart-song-image me-3" style="width: 60px; height: 60px; object-fit: cover;" />
-                            <div>
-                                <span>{{ song.title }}</span> by <span>{{ song.author.username }}</span>
-                            </div>
+            {% for song in songs %}
+                <div class="cart-item">
+                    <div class="cart-song-details">
+                        <img src="{{ song.image.url|default:'/static/images/music_img.jpeg' }}" alt="{{ song.title }}" class="cart-song-image">
+                        <div class="cart-song-info">
+                            <span class="cart-song-title">{{ song.title }}</span>
+                            <span class="cart-song-author">{{ song.author.username }}</span>
                         </div>
-                        <div class="cart-song-actions d-flex align-items-center gap-3 mt-2 mt-md-0">
-                            <span class="me-3">₽{{ song.price }}</span>
-                            <form action="{% url 'store:buy_song' song.id %}" method="get" class="me-2">
-                                <button type="submit" class="btn btn-success btn-sm">Купить</button>
-                            </form>
-                            <form action="{% url 'store:remove_from_cart' song.id %}" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
-                            </form>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-            <div class="cart-summary mt-4">
-                <p><strong>Итого:</strong> ₽{{ total_price }}</p>
+                    </div>
+                    <div class="cart-song-actions d-flex align-items-center gap-3">
+                        <span class="cart-song-price">₽{{ song.price|floatformat:2 }}</span>
+                        <form action="{% url 'store:buy_song' song.id %}" method="get" class="cart-buy-form">
+                            <button type="submit" class="btn checkout-button btn-sm">
+                                <i class="bi bi-cart-check me-1"></i> Купить
+                            </button>
+                        </form>
+                        <form action="{% url 'store:remove_from_cart' song.id %}" method="post" class="cart-remove-form">
+                            {% csrf_token %}
+                            <button type="submit" class="btn cart-remove-button btn-sm">
+                                <i class="bi bi-trash me-1"></i> Удалить
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="cart-summary mt-4 text-end">
+                <p class="fs-5"><strong>Итого:</strong> ₽{{ total_price|floatformat:2 }}</p>
+                <button class="btn checkout-button" onclick="window.location.href='{% url 'store:process_purchase' %}'">
+                    <i class="bi bi-bag-check me-1"></i> Оформить заказ
+                </button>
             </div>
         {% else %}
             <p class="text-muted">Корзина пуста.</p>
+            <a href="{% url 'store:music_list' %}" class="btn auth-btn mt-3">
+                <i class="bi bi-music-note-list me-1"></i> Перейти к музыке
+            </a>
         {% endif %}
     </div>
 </main>
