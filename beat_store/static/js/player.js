@@ -1,5 +1,3 @@
-// player.js
-// Модуль плеера для управления воспроизведением музыки, лайками и корзиной
 const Player = (function () {
     let audioPlayer,
         audioSource,
@@ -183,17 +181,17 @@ const Player = (function () {
                     'X-CSRFToken': csrfToken,
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(`HTTP ошибка: ${response.status} ${response.statusText} - ${data.message || 'Нет сообщения от сервера'}`);
+                throw new Error(`HTTP ошибка: ${response.status} ${data.message || 'Нет сообщения'}`);
             }
 
             if (data.success) {
                 console.log(`Песня ${songId} успешно добавлена в корзину:`, data.message);
-                // Отключаем все кнопки корзины для этой песни
                 document.querySelectorAll(`.cart-button[data-song-id="${songId}"]`).forEach(button => {
                     button.disabled = true;
                 });
@@ -207,9 +205,9 @@ const Player = (function () {
             console.error(`Ошибка при добавлении песни ${songId} в корзину:`, error.message);
             let userMessage = 'Произошла ошибка при добавлении в корзину.';
             if (error.message.includes('403')) {
-                userMessage += ' Проверьте, авторизованы ли вы.';
+                userMessage = 'Пожалуйста, войдите в аккаунт.';
             } else if (error.message.includes('404')) {
-                userMessage += ' Песня не найдена.';
+                userMessage = 'Песня не найдена.';
             }
             alert(userMessage);
         }
@@ -224,7 +222,6 @@ const Player = (function () {
         audioSource.src = song.url;
         audioPlayer.load();
 
-        // Проверяем, можно ли воспроизвести аудио
         const playPromise = audioPlayer.play();
         if (playPromise !== undefined) {
             playPromise
@@ -234,7 +231,9 @@ const Player = (function () {
                     currentSongDisplay.textContent = `${song.title} - ${song.author || 'Неизвестен'}`;
                     songPriceElement.textContent = `₽${song.price.toFixed(2)}`;
                     songPriceElement.dataset.songId = song.id;
-                    songPriceElement.disabled = song.id in (JSON.parse(localStorage.getItem('cart')) || []);
+                    fetchCartState(song.id).then(inCart => {
+                        songPriceElement.disabled = inCart;
+                    });
                     likeButtonPlayer.dataset.likes = song.likes;
                     updatePlayerLikeState(song.id);
                     hasPlayed = false;
@@ -246,6 +245,24 @@ const Player = (function () {
                     console.error('Ошибка воспроизведения:', err);
                     handleAudioError();
                 });
+        }
+    }
+
+    // Получение состояния корзины с сервера
+    async function fetchCartState(songId) {
+        try {
+            const response = await fetch('/cart/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            });
+            const data = await response.json();
+            return data.songs.some(song => song.id === songId);
+        } catch (error) {
+            console.error('Ошибка при получении состояния корзины:', error);
+            return false;
         }
     }
 
@@ -264,29 +281,34 @@ const Player = (function () {
     }
 
     // Увеличение счетчика воспроизведений
-    function incrementPlayCount(songId) {
-        console.log(`Отправка запроса на увеличение счетчика воспроизведений для песни ${songId}: /play-song/${songId}/`);
-        fetch(`/play-song/${songId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken,
-                'Content-Type': 'application/json',
-            },
-        })
-            .then(response => {
-                if (!response.ok) {
-                    console.error(`Ошибка при увеличении счетчика воспроизведений: ${response.status} ${response.statusText}`);
-                    return Promise.reject(response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log(`Счетчик воспроизведений для песни ${songId} обновлен:`, data.total_plays);
-                const playCountElement = document.getElementById(`plays-count-${songId}`);
-                if (playCountElement) playCountElement.innerHTML = `<i class="bi bi-play-fill"></i> ${data.total_plays}`;
-                if (currentIndex !== -1) playlist[currentIndex].plays = data.total_plays;
-            })
-            .catch(error => console.error(`Ошибка при увеличении счетчика для песни ${songId}:`, error));
+    async function incrementPlayCount(songId) {
+        try {
+            console.log(`Отправка запроса на увеличение счетчика воспроизведений для песни ${songId}: /play-song/${songId}/`);
+            const response = await fetch(`/play-song/${songId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ошибка: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(`Счетчик воспроизведений для песни ${songId} обновлен:`, data.total_plays);
+            const playCountElement = document.getElementById(`plays-count-${songId}`);
+            if (playCountElement) {
+                playCountElement.innerHTML = `<i class="bi bi-play-fill"></i> ${data.total_plays}`;
+            }
+            if (currentIndex !== -1) {
+                playlist[currentIndex].plays = data.total_plays;
+            }
+        } catch (error) {
+            console.error(`Ошибка при увеличении счетчика для песни ${songId}:`, error);
+        }
     }
 
     // Воспроизведение следующей песни
@@ -411,46 +433,50 @@ const Player = (function () {
     }
 
     // Переключение лайка
-    function toggleLike(songId, button, callback) {
-        console.log(`Отправка запроса на лайк/удаление лайка для песни ${songId}: /like/${songId}/`);
-        fetch(`/like/${songId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken,
-                'Content-Type': 'application/json',
-            },
-        })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(data => {
-                        throw new Error(`HTTP ошибка: ${response.status} ${response.statusText} - ${data.message || data.error || 'Нет сообщения от сервера'}`);
-                    }).catch(() => {
-                        throw new Error(`HTTP ошибка: ${response.status} ${response.statusText}`);
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    console.log(`Лайк для песни ${songId} успешно обработан:`, data);
-                    button.classList.toggle('liked', data.liked);
-                    button.dataset.likes = data.total_likes;
-                    callback(data);
-                } else {
-                    console.warn(`Не удалось обработать лайк для песни ${songId}:`, data.message);
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error(`Ошибка при обработке лайка для песни ${songId}:`, error.message);
-                let userMessage = 'Не удалось поставить/убрать лайк.';
-                if (error.message.includes('403')) {
-                    userMessage += ' Проверьте, авторизованы ли вы.';
-                } else if (error.message.includes('404')) {
-                    userMessage += ' Песня не найдена.';
-                }
-                alert(userMessage);
+    async function toggleLike(songId, button, callback) {
+        try {
+            console.log(`Отправка запроса на лайк/удаление лайка для песни ${songId}: /like/${songId}/`);
+            console.log('CSRF-токен:', csrfToken);
+            const response = await fetch(`/like/${songId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({})
             });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(`HTTP ошибка: ${response.status} ${data.message || 'Нет сообщения'}`);
+            }
+
+            if (data.success) {
+                console.log(`Лайк для песни ${songId} успешно обработан:`, data);
+                button.classList.toggle('liked', data.liked);
+                button.dataset.likes = data.total_likes;
+                // Синхронизируем все кнопки лайков для этой песни
+                document.querySelectorAll(`.like-button[data-song-id="${songId}"]`).forEach(btn => {
+                    btn.classList.toggle('liked', data.liked);
+                    btn.dataset.likes = data.total_likes;
+                });
+                callback(data);
+            } else {
+                console.warn(`Не удалось обработать лайк для песни ${songId}:`, data.message);
+                alert(data.message || 'Не удалось поставить/убрать лайк.');
+            }
+        } catch (error) {
+            console.error(`Ошибка при обработке лайка для песни ${songId}:`, error.message);
+            let userMessage = 'Не удалось поставить/убрать лайк. Проверьте, авторизованы ли вы.';
+            if (error.message.includes('403')) {
+                userMessage = 'Пожалуйста, войдите в аккаунт.';
+            } else if (error.message.includes('404')) {
+                userMessage = 'Песня не найдена.';
+            }
+            alert(userMessage);
+        }
     }
 
     // Сброс иконок воспроизведения
@@ -474,7 +500,6 @@ const Player = (function () {
     function savePlayerState() {
         if (!currentSongId || currentIndex === -1) return;
         const song = playlist[currentIndex];
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
         const songData = {
             id: currentSongId,
             url: audioSource.src,
@@ -486,7 +511,6 @@ const Player = (function () {
             likes: parseInt(likeButtonPlayer.dataset.likes) || 0,
             liked: likeButtonPlayer.classList.contains('liked'),
             price: song.price,
-            inCart: cart.includes(currentSongId)
         };
         localStorage.setItem('currentSong', JSON.stringify(songData));
     }
@@ -512,7 +536,10 @@ const Player = (function () {
         likeButtonPlayer.dataset.likes = savedSong.likes || 0;
         songPriceElement.textContent = `₽${song.price.toFixed(2)}`;
         songPriceElement.dataset.songId = song.id;
-        songPriceElement.disabled = savedSong.inCart || false;
+
+        fetchCartState(song.id).then(inCart => {
+            songPriceElement.disabled = inCart;
+        });
 
         if (savedSong.isPlaying) {
             const playPromise = audioPlayer.play();

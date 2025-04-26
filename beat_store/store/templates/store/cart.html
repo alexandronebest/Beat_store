@@ -6,8 +6,8 @@
 <main class="container my-4">
     <h2>Корзина</h2>
     <div class="profile-details mb-4">
-        <h1 class="profile-title">{{ profile.user.username }}</h1>
-        {% if request.user == profile.user %}
+        <h1 class="profile-title">{{ request.user.username }}</h1>
+        {% if request.user.is_authenticated %}
             <p class="profile-balance"><strong>Баланс:</strong> ₽{{ request.user.balance }} <a href="{% url 'store:top_up_balance' %}" class="btn btn-primary btn-sm ms-2">Пополнить</a></p>
         {% endif %}
     </div>

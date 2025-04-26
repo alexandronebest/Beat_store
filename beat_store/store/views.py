@@ -1,6 +1,6 @@
 import logging
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -12,11 +12,21 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
+from django import forms
 from .models import Song, Genre, Transaction
 from .forms import SongForm
 import json
 
 logger = logging.getLogger(__name__)
+
+class TopUpBalanceForm(forms.Form):
+    amount = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        min_value=0.01,
+        label='Сумма пополнения',
+        widget=forms.NumberInput(attrs={'step': '0.01', 'min': '0.01'})
+    )
 
 class CustomLoginView(LoginView):
     template_name = 'store/login.html'
@@ -51,7 +61,7 @@ def index(request):
         'top_songs': top_songs,
         'new_songs': new_songs,
         'genres': genres,
-        'songs_json': json.dumps(songs_json, ensure_ascii=False),  # Поддержка кириллицы
+        'songs_json': json.dumps(songs_json, ensure_ascii=False),
     }
     return render(request, 'store/index.html', context)
 
@@ -190,9 +200,17 @@ def upload_song(request):
 @require_POST
 @csrf_protect
 def like_song(request, song_id):
+    logger.debug(f"Получен запрос на лайк для song_id {song_id} от пользователя {request.user.username}")
     try:
         song = get_object_or_404(Song, id=song_id)
         user = request.user
+
+        if not user.is_authenticated:
+            logger.warning(f"Неавторизованный пользователь пытался поставить лайк на песню {song_id}")
+            return JsonResponse({
+                'success': False,
+                'message': 'Пожалуйста, войдите в аккаунт.',
+            }, status=403)
 
         if user in song.likes.all():
             song.likes.remove(user)
@@ -212,7 +230,7 @@ def like_song(request, song_id):
             'success': True,
             'liked': liked,
             'total_likes': song.total_likes,
-            'message': 'Лайк успешно обновлен'
+            'message': 'Лайк успешно обновлён'
         }, status=200)
     except Exception as e:
         logger.error(f"Ошибка в like_song для song_id {song_id}: {str(e)}")
@@ -220,7 +238,7 @@ def like_song(request, song_id):
             'success': False,
             'message': f'Произошла ошибка при обработке лайка: {str(e)}',
             'error': str(e)
-        }, status=500)
+        }, status=403 if 'permission' in str(e).lower() else 500)
 
 @login_required
 @require_POST
@@ -229,20 +247,20 @@ def play_song(request, song_id):
     try:
         song = get_object_or_404(Song, id=song_id)
         song.total_plays = F('total_plays') + 1
-        songრ: song.save()
+        song.save()
         song.refresh_from_db()
 
         logger.debug(f"Песня {song_id} воспроизведена, общее количество: {song.total_plays}")
         return JsonResponse({
             'success': True,
             'total_plays': song.total_plays,
-            'message': 'Счетчик воспроизведений обновлен'
+            'message': 'Счётчик воспроизведений обновлён'
         }, status=200)
     except Exception as e:
         logger.error(f"Ошибка в play_song для song_id {song_id}: {str(e)}")
         return JsonResponse({
             'success': False,
-            'message': f'Произошла ошибка при увеличении счетчика воспроизведений: {str(e)}',
+            'message': f'Произошла ошибка при увеличении счётчика воспроизведений: {str(e)}',
             'error': str(e)
         }, status=500)
 
@@ -289,7 +307,7 @@ def add_to_cart(request, song_id):
             'success': False,
             'message': f'Произошла ошибка при добавлении в корзину: {str(e)}',
             'error': str(e)
-        }, status=500)
+        }, status=403 if 'permission' in str(e).lower() else 500)
 
 @login_required
 def cart(request):
@@ -414,3 +432,26 @@ def process_purchase(request):
             'message': f'Произошла ошибка при обработке покупки: {str(e)}',
             'error': str(e)
         }, status=500)
+
+@login_required
+def top_up_balance(request):
+    if request.method == 'POST':
+        form = TopUpBalanceForm(request.POST)
+        if form.is_valid():
+            amount = form.cleaned_data['amount']
+            user = request.user
+            user.balance += amount
+            user.save()
+            messages.success(request, f'Баланс успешно пополнен на ₽{amount}.')
+            logger.debug(f"Пользователь {request.user.username} пополнил баланс на {amount}")
+            return redirect('store:cart')
+        else:
+            messages.error(request, 'Ошибка в форме пополнения. Проверьте введённые данные.')
+    else:
+        form = TopUpBalanceForm()
+    
+    context = {
+        'form': form,
+        'current_balance': request.user.balance,
+    }
+    return render(request, 'store/top_up_balance.html', context)

@@ -17,8 +17,13 @@ urlpatterns = [
     path('cart/remove/<int:song_id>/', views.remove_from_cart, name='remove_from_cart'),
     path('buy/<int:song_id>/', views.buy_song, name='buy_song'),
     path('purchase/', views.process_purchase, name='process_purchase'),
-    path('login/', auth_views.LoginView.as_view(template_name='store/login.html'), name='login'),
+    path('login/', auth_views.LoginView.as_view(
+        template_name='store/login.html',
+        authentication_form=auth_views.AuthenticationForm,
+        extra_context={'next': ''}
+    ), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('register/', views.register, name='register'),  # Добавлен маршрут для регистрации
-    path('playlist/', views.playlist, name='playlist'),  # Добавлен маршрут для плейлиста
+    path('register/', views.register, name='register'),
+    path('playlist/', views.playlist, name='playlist'),
+    path('top-up-balance/', views.top_up_balance, name='top_up_balance'),
 ]
