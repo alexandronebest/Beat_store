@@ -1,81 +1,35 @@
+/* music_list.css */
+
+/* Импорт переменных из style.css */
 :root {
   --footer-bg: #1a1a1a;
   --primary-color: #4CAF50;
   --dark-bg: #1a1a1a;
   --light-bg: #f5f5f5;
-  --text-dark: #333;
-  --text-light: #fff;
-  --close-button-color: #070000;
+  --text-dark: #000000;
+  --text-light: #ffffff;
   --transition: all 0.3s ease;
   --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.15);
-  --like-color: #fc0; /* Жёлтый цвет лайка как в Яндекс.Музыке */
+  --like-color: rgb(255, 0, 0);
+  --cart-color: #fefe02;
 }
 
-.container {
-  max-width: 1400px;
-  padding: 0 15px;
-  margin: 0 auto;
+/* Сброс стилей */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-h1 {
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-  font-size: 2.5rem;
-  color: var(--text-dark);
-  margin-bottom: 2rem;
-  text-align: center;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.filter-form {
-  background: var(--text-light);
-  padding: 1.5rem;
-  border-radius: 20px;
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 2rem;
-}
-
-.form-control, .form-select {
-  border-radius: 50px;
-  padding: 0.6rem 1.5rem;
-  border: 2px solid var(--primary-color);
-  font-family: 'Montserrat', sans-serif;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: var(--shadow-sm);
-  transition: var(--transition);
-}
-
-.form-control:focus, .form-select:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
-  outline: none;
-}
-
-.btn-primary {
-  background: var(--primary-color);
-  color: var(--text-light);
-  border: none;
-  border-radius: 50px;
-  padding: 0.6rem 1.5rem;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
-  box-shadow: var(--shadow-sm);
-  transition: var(--transition);
-}
-
-.btn-primary:hover {
-  background: #388e3c;
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
-}
-
+/* Контейнер песен */
 .songs-container {
   position: relative;
   user-select: none;
   padding: 0 60px;
 }
 
+/* Список песен */
 .songs {
   display: flex;
   overflow-x: auto;
@@ -84,12 +38,14 @@ h1 {
   padding: 1rem 0;
   scroll-behavior: smooth;
   gap: 1rem;
+  touch-action: pan-x;
 }
 
 .songs::-webkit-scrollbar {
   display: none;
 }
 
+/* Элемент песни */
 .song-item {
   flex: 0 0 200px;
   background: var(--text-light);
@@ -105,12 +61,14 @@ h1 {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
+/* Контейнер изображения песни */
 .song-image-container {
   position: relative;
   width: 100%;
-  padding-top: 100%; /* 1:1 Aspect Ratio */
+  padding-top: 100%; /* Квадратное соотношение сторон */
 }
 
+/* Изображение песни */
 .song-image {
   position: absolute;
   top: 0;
@@ -121,6 +79,7 @@ h1 {
   border-radius: 15px 15px 0 0;
 }
 
+/* Элементы управления песней */
 .song-controls {
   position: absolute;
   top: 50%;
@@ -141,12 +100,12 @@ h1 {
   opacity: 1;
 }
 
-.song-controls .like-button {
-  position: relative;
+/* Кнопка лайка */
+.like-button {
   background: none;
   border: none;
   color: var(--text-light);
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   padding: 0;
   width: 40px;
   height: 40px;
@@ -156,29 +115,17 @@ h1 {
   transition: var(--transition);
 }
 
-.song-controls .like-button::after {
-  content: attr(data-likes);
-  position: absolute;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-light);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.song-controls .like-button.liked {
+.like-button.liked {
   color: var(--like-color);
 }
 
-.song-controls .like-button:hover {
+.like-button:hover {
   color: var(--like-color);
-  transform: scale(1.15);
-  filter: drop-shadow(0 0 8px rgba(255, 204, 0, 0.6));
+  filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.6));
 }
 
-.song-controls .play-button {
+/* Кнопка воспроизведения */
+.play-button {
   background: var(--primary-color);
   border: none;
   border-radius: 50%;
@@ -192,18 +139,19 @@ h1 {
   transition: var(--transition);
 }
 
-.song-controls .play-button:hover {
+.play-button:hover {
   background: #388e3c;
   transform: scale(1.15);
   box-shadow: 0 0 15px rgba(76, 175, 80, 0.8);
 }
 
-.song-controls .buy-button {
-  background: transparent;
+/* Кнопка добавления в корзину */
+.buy-button {
+  background: var(--cart-color);
   border: none;
-  color: var(--text-light);
+  border-radius: 50%;
+  color: var(--text-dark);
   font-size: 1.6rem;
-  padding: 0;
   width: 40px;
   height: 40px;
   display: flex;
@@ -212,17 +160,39 @@ h1 {
   transition: var(--transition);
 }
 
-.song-controls .buy-button:hover {
-  color: var(--primary-color);
+.buy-button:hover {
+  background: #ffca28;
   transform: scale(1.15);
-  filter: drop-shadow(0 0 8px rgba(76, 175, 80, 0.6));
+  filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.6));
 }
 
+/* Кнопка добавления в плейлист */
+.playlist-button {
+  background: var(--text-light);
+  border: none;
+  border-radius: 50%;
+  color: var(--text-dark);
+  font-size: 1.6rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.playlist-button:hover {
+  background: #e0e0e0;
+  transform: scale(1.15);
+}
+
+/* Информация о песне */
 .song-info {
   padding: 1rem;
   text-align: center;
 }
 
+/* Название песни */
 .song-title {
   font-family: 'Montserrat', sans-serif;
   font-size: 1.2rem;
@@ -232,6 +202,7 @@ h1 {
   text-overflow: ellipsis;
 }
 
+/* Автор песни */
 .song-author {
   font-family: 'Montserrat', sans-serif;
   font-size: 0.95rem;
@@ -241,6 +212,7 @@ h1 {
   text-overflow: ellipsis;
 }
 
+/* Ссылка на автора */
 .song-author-link {
   color: var(--primary-color);
   text-decoration: none;
@@ -252,6 +224,18 @@ h1 {
   color: #388e3c;
 }
 
+/* Статистика песни */
+.song-stats {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  color: #666;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Кнопки прокрутки */
 .scroll-button {
   position: absolute;
   top: 50%;
@@ -282,59 +266,190 @@ h1 {
   transform: translateY(-50%) scale(1.1);
 }
 
+/* Стили для формы фильтров */
+.filter-form .form-control,
+.filter-form .form-select {
+  border-radius: 10px;
+  border: 2px solid var(--primary-color);
+  transition: var(--transition);
+}
+
+.filter-form .form-control:focus,
+.filter-form .form-select:focus {
+  border-color: #388e3c;
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.4);
+  outline: none;
+}
+
+.filter-form .btn-primary {
+  background: var(--primary-color);
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.filter-form .btn-primary:hover {
+  background: #388e3c;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+/* Стили для пагинации */
+.pagination .page-link {
+  color: var(--primary-color);
+  border-radius: 8px;
+  margin: 0 5px;
+  transition: var(--transition);
+}
+
+.pagination .page-link:hover {
+  background: var(--primary-color);
+  color: var(--text-light);
+  border-color: var(--primary-color);
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--text-light);
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #ccc;
+  border-color: #ccc;
+  background: transparent;
+}
+
+/* Адаптивность */
 @media (max-width: 768px) {
+  .songs-container {
+      padding: 0 40px;
+  }
+
   .song-item {
-    flex: 0 0 160px;
+      flex: 0 0 160px;
   }
 
   .song-title {
-    font-size: 1rem;
+      font-size: 1rem;
   }
 
-  .song-controls .play-button {
-    width: 45px;
-    height: 45px;
-    font-size: 1.6rem;
+  .song-author,
+  .song-stats {
+      font-size: 0.85rem;
   }
 
-  .form-control, .form-select {
-    margin-bottom: 1rem;
+  .scroll-button {
+      width: 40px;
+      height: 40px;
+      font-size: 1.3rem;
+  }
+
+  .song-controls {
+      gap: 10px;
+      padding: 10px;
+  }
+
+  .play-button {
+      width: 45px;
+      height: 45px;
+      font-size: 1.6rem;
+  }
+
+  .like-button,
+  .buy-button,
+  .playlist-button {
+      width: 35px;
+      height: 35px;
+      font-size: 1.4rem;
   }
 }
 
 @media (max-width: 576px) {
+  .songs-container {
+      padding: 0 30px;
+  }
+
   .song-item {
-    flex: 0 0 140px;
+      flex: 0 0 140px;
   }
 
   .song-title {
-    font-size: 0.9rem;
+      font-size: 0.9rem;
   }
 
-  .song-author {
-    font-size: 0.8rem;
+  .song-author,
+  .song-stats {
+      font-size: 0.8rem;
+  }
+
+  .scroll-button {
+      width: 35px;
+      height: 35px;
+      font-size: 1.2rem;
   }
 
   .song-controls {
-    gap: 10px;
-    padding: 10px;
+      gap: 8px;
+      padding: 8px;
   }
 
-  .song-controls .play-button {
-    width: 40px;
-    height: 40px;
-    font-size: 1.4rem;
+  .play-button {
+      width: 40px;
+      height: 40px;
+      font-size: 1.4rem;
   }
 
-  .song-controls .like-button {
-    font-size: 1.3rem;
+  .like-button,
+  .buy-button,
+  .playlist-button {
+      width: 30px;
+      height: 30px;
+      font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .songs-container {
+      padding: 0 20px;
   }
 
-  .song-controls .buy-button {
-    font-size: 1.4rem;
+  .song-item {
+      flex: 0 0 120px;
   }
 
-  h1 {
-    font-size: 2rem;
+  .song-title {
+      font-size: 0.85rem;
+  }
+
+  .song-author,
+  .song-stats {
+      font-size: 0.75rem;
+  }
+
+  .scroll-button {
+      width: 30px;
+      height: 30px;
+      font-size: 1rem;
+  }
+
+  .song-controls {
+      gap: 6px;
+      padding: 6px;
+  }
+
+  .play-button {
+      width: 35px;
+      height: 35px;
+      font-size: 1.2rem;
+  }
+
+  .like-button,
+  .buy-button,
+  .playlist-button {
+      width: 28px;
+      height: 28px;
+      font-size: 1rem;
   }
 }

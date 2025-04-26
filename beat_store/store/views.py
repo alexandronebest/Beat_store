@@ -53,7 +53,8 @@ def index(request):
             'author': song.author.username,
             'total_likes': song.total_likes,
             'price': float(song.price),
-            'total_plays': song.total_plays
+            'total_plays': song.total_plays,
+            'cover': song.cover.url if song.cover else '/static/images/default_cover.jpg'
         }
         for song in (list(top_songs) + list(new_songs))
     ]
@@ -70,14 +71,18 @@ def index(request):
 def music_list(request):
     songs = Song.objects.all().order_by('-created_at')
     genres = Genre.objects.all()
+    authors = Profile.objects.filter(user__songs__isnull=False).select_related('user').distinct()
 
     genre_id = request.GET.get('genre')
     search_query = request.GET.get('search')
+    author_id = request.GET.get('author')
 
     if genre_id:
         songs = songs.filter(genre_id=genre_id)
     if search_query:
         songs = songs.filter(title__icontains=search_query) | songs.filter(author__username__icontains=search_query)
+    if author_id:
+        songs = songs.filter(author_id=author_id)
 
     paginator = Paginator(songs, 12)
     page_number = request.GET.get('page')
@@ -91,7 +96,8 @@ def music_list(request):
             'author': song.author.username,
             'total_likes': song.total_likes,
             'price': float(song.price),
-            'total_plays': song.total_plays
+            'total_plays': song.total_plays,
+            'cover': song.cover.url if song.cover else '/static/images/default_cover.jpg'
         }
         for song in songs
     ]
@@ -99,23 +105,15 @@ def music_list(request):
     context = {
         'page_obj': page_obj,
         'genres': genres,
+        'authors': authors,
         'selected_genre': genre_id,
+        'selected_author': author_id,
         'search_query': search_query,
         'songs_json': json.dumps(songs_json, ensure_ascii=False),
     }
     return render(request, 'store/music_list.html', context)
 
 # Список авторов
-# def authors_list(request):
-#     authors = User.objects.filter(song__isnull=False).distinct().order_by('username')
-#     paginator = Paginator(authors, 12)
-#     page_number = request.GET.get('page')
-#     page_obj = paginator.get_page(page_number)
-
-#     context = {
-#         'page_obj': page_obj,
-#     }
-#     return render(request, 'store/authors_list.html', context)
 def authors_list(request):
     # Фильтруем пользователей, у которых есть песни
     authors = User.objects.filter(songs__isnull=False).distinct().order_by('username')
@@ -147,7 +145,8 @@ def playlist(request):
             'author': song.author.username,
             'total_likes': song.total_likes,
             'price': float(song.price),
-            'total_plays': song.total_plays
+            'total_plays': song.total_plays,
+            'cover': song.cover.url if song.cover else '/static/images/default_cover.jpg'
         }
         for song in songs
     ]
@@ -202,7 +201,8 @@ def profile(request, username):
             'author': song.author.username,
             'total_likes': song.total_likes,
             'price': float(song.price),
-            'total_plays': song.total_plays
+            'total_plays': song.total_plays,
+            'cover': song.cover.url if song.cover else '/static/images/default_cover.jpg'
         }
         for song in (list(songs) + list(liked_songs))
     ]
@@ -407,7 +407,8 @@ def cart(request):
             'author': song.author.username,
             'total_likes': song.total_likes,
             'price': float(song.price),
-            'total_plays': song.total_plays
+            'total_plays': song.total_plays,
+            'cover': song.cover.url if song.cover else '/static/images/default_cover.jpg'
         }
         for song in songs
     ]
@@ -467,7 +468,8 @@ def buy_song(request, song_id):
             'author': song.author.username,
             'total_likes': song.total_likes,
             'price': float(song.price),
-            'total_plays': song.total_plays
+            'total_plays': song.total_plays,
+            'cover': song.cover.url if song.cover else '/static/images/default_cover.jpg'
         }
     ]
 
@@ -542,3 +544,38 @@ def top_up_balance(request):
         'current_balance': request.user.balance,
     }
     return render(request, 'store/top_up_balance.html', context)
+
+# В конец store/views.py добавьте:
+
+@login_required
+@require_POST
+@csrf_protect
+def add_to_playlist(request, song_id):
+    try:
+        song = get_object_or_404(Song, id=song_id)
+        user = request.user
+
+        # Предполагаем, что плейлист реализован через поле likes или отдельную модель.
+        # Здесь используется поле likes для простоты. Если у вас есть модель Playlist, замените логику.
+        if user in song.likes.all():
+            logger.debug(f"Песня {song_id} уже в плейлисте пользователя {user.username}")
+            return JsonResponse({
+                'success': False,
+                'message': f'Песня "{song.title}" уже в плейлисте',
+                'in_playlist': True
+            }, status=200)
+
+        song.likes.add(user)
+        logger.debug(f"Пользователь {user.username} добавил песню {song_id} в плейлист")
+        return JsonResponse({
+            'success': True,
+            'message': f'Песня "{song.title}" добавлена в плейлист',
+            'in_playlist': True
+        }, status=200)
+    except Exception as e:
+        logger.error(f"Ошибка в add_to_playlist для song_id {song_id}: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Произошла ошибка при добавлении в плейлист: {str(e)}',
+            'error': str(e)
+        }, status=500)

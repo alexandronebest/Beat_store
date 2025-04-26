@@ -38,4 +38,6 @@ urlpatterns = [
     
     # Пополнение баланса
     path('top-up/', views.top_up_balance, name='top_up_balance'),
-]
+    # Добавление в плейлист
+    path('playlist/add/<int:song_id>/', views.add_to_playlist, name='add_to_playlist'),
+    ]
