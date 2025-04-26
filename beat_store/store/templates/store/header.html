@@ -2,9 +2,9 @@
 <header class="navbar">
     <div class="container">
         <a class="navbar-brand" href="{% url 'store:index' %}">Beat Store</a>
-        <form class="search-form mx-auto" action="{% url 'store:search' %}" method="get">
+        <form class="search-form mx-auto" action="{% url 'store:music_list' %}" method="get">
             <div class="input-group">
-                <input class="search-input form-control" type="search" name="query" placeholder="Поиск песен или исполнителей" aria-label="Поиск">
+                <input class="search-input form-control" type="search" name="search" placeholder="Поиск песен или исполнителей" aria-label="Поиск">
                 <button class="btn btn-outline-light search-btn" type="submit" aria-label="Поиск">
                     <i class="bi bi-search"></i>
                 </button>
@@ -47,7 +47,7 @@
                             <a class="nav-link" href="{% url 'store:cart' %}">Корзина</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'store:add_music' %}">Добавить музыку</a>
+                            <a class="nav-link" href="{% url 'store:upload_song' %}">Добавить музыку</a>
                         </li>
                         <li class="nav-item">
                             <form action="{% url 'store:logout' %}" method="post" style="display: inline;">
@@ -64,9 +64,9 @@
                         </li>
                     {% endif %}
                 </ul>
-                <form class="search-form mt-3" action="{% url 'store:search' %}" method="get">
+                <form class="search-form mt-3" action="{% url 'store:music_list' %}" method="get">
                     <div class="input-group">
-                        <input class="search-input form-control" type="search" name="query" placeholder="Поиск песен или исполнителей" aria-label="Поиск">
+                        <input class="search-input form-control" type="search" name="search" placeholder="Поиск песен или исполнителей" aria-label="Поиск">
                         <button class="btn btn-outline-light search-btn" type="submit" aria-label="Поиск">
                             <i class="bi bi-search"></i>
                         </button>

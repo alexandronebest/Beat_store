@@ -28,7 +28,8 @@
                                     <button class="like-button {% if request.user.is_authenticated and request.user in song.likes.all %}liked{% endif %}" 
                                             data-song-id="{{ song.id }}" 
                                             data-likes="{{ song.total_likes }}"
-                                            aria-label="Лайк">
+                                            aria-label="Лайк"
+                                            {% if not request.user.is_authenticated %}disabled{% endif %}>
                                         <i class="bi bi-heart-fill"></i>
                                     </button>
                                     <button class="play-button" 
@@ -40,8 +41,9 @@
                                         <i class="bi bi-play-fill"></i>
                                     </button>
                                     <button class="cart-button" 
+                                            data-song-id="{{ song.id }}"
                                             title="Добавить в корзину" 
-                                            onclick="addToCart({{ song.id }})"
+                                            onclick="Player.addToCart({{ song.id }})"
                                             aria-label="Добавить в корзину"
                                             {% if song.id in request.session.cart %}disabled{% endif %}>
                                         <i class="bi bi-cart-plus"></i>
@@ -86,7 +88,8 @@
                                     <button class="like-button {% if request.user.is_authenticated and request.user in song.likes.all %}liked{% endif %}" 
                                             data-song-id="{{ song.id }}" 
                                             data-likes="{{ song.total_likes }}"
-                                            aria-label="Лайк">
+                                            aria-label="Лайк"
+                                            {% if not request.user.is_authenticated %}disabled{% endif %}>
                                         <i class="bi bi-heart-fill"></i>
                                     </button>
                                     <button class="play-button" 
@@ -98,8 +101,9 @@
                                         <i class="bi bi-play-fill"></i>
                                     </button>
                                     <button class="cart-button" 
+                                            data-song-id="{{ song.id }}"
                                             title="Добавить в корзину" 
-                                            onclick="addToCart({{ song.id }})"
+                                            onclick="Player.addToCart({{ song.id }})"
                                             aria-label="Добавить в корзину"
                                             {% if song.id in request.session.cart %}disabled{% endif %}>
                                         <i class="bi bi-cart-plus"></i>
@@ -152,7 +156,7 @@
     <script src="{% static 'js/player.js' %}"></script>
     <script>
         const songsData = {{ songs_json|safe }};
-        Player.init(songsData);
+        Player.init(songsData || []);
 
         function scrollSongs(direction, containerId) {
             const container = document.getElementById(containerId);
@@ -161,29 +165,6 @@
                 left: direction === 'left' ? container.scrollLeft - scrollAmount : container.scrollLeft + scrollAmount,
                 behavior: 'smooth'
             });
-        }
-
-        async function addToCart(songId) {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-            try {
-                const response = await fetch(`/cart/add/${songId}/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken,
-                        'Content-Type': 'application/json',
-                    },
-                });
-                const data = await response.json();
-                if (data.success) {
-                    document.querySelector(`.cart-button[onclick="addToCart(${songId})"]`).disabled = true;
-                    alert(data.message);
-                } else {
-                    alert(data.message);
-                }
-            } catch (error) {
-                console.error('Ошибка:', error);
-                alert('Произошла ошибка при добавлении в корзину.');
-            }
         }
     </script>
 {% endblock %}

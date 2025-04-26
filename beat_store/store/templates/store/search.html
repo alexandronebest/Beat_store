@@ -1,0 +1,62 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Результаты поиска{% endblock %}
+
+{% block content %}
+    <main class="container my-4">
+        <h2>Результаты поиска: "{{ search_query }}"</h2>
+        {% if page_obj %}
+            <div class="songs">
+                {% for song in page_obj %}
+                    <div class="song-item" data-song-id="{{ song.id }}">
+                        <div class="song-image-container">
+                            {% if song.cover %}
+                                <img src="{{ song.cover.url }}" alt="{{ song.title }}" class="song-image" loading="lazy">
+                            {% else %}
+                                <img src="{% static 'images/music_img.jpeg' %}" alt="{{ song.title }}" class="song-image" loading="lazy">
+                            {% endif %}
+                            <div class="song-controls">
+                                <button class="like-button {% if request.user.is_authenticated and request.user in song.likes.all %}liked{% endif %}" 
+                                        data-song-id="{{ song.id }}" 
+                                        data-likes="{{ song.total_likes }}"
+                                        aria-label="Лайк">
+                                    <i class="bi bi-heart-fill"></i>
+                                </button>
+                                <button class="play-button" 
+                                        data-song-id="{{ song.id }}" 
+                                        data-song-url="{{ song.path.url }}" 
+                                        data-song-title="{{ song.title }} - {{ song.author.username }}"
+                                        data-song-price="{{ song.price }}"
+                                        aria-label="Воспроизвести">
+                                    <i class="bi bi-play-fill"></i>
+                                </button>
+                                <button class="cart-button" 
+                                        title="Добавить в корзину" 
+                                        onclick="Player.addToCart({{ song.id }})"
+                                        aria-label="Добавить в корзину"
+                                        {% if song.id in request.session.cart %}disabled{% endif %}>
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="song-info">
+                            <h3 class="song-title">{{ song.title }}</h3>
+                            <p class="song-author">
+                                <a href="{% url 'store:profile' song.author.username %}" class="song-author-link">{{ song.author.username }}</a>
+                            </p>
+                            <div class="song-stats">
+                                <span id="plays-count-{{ song.id }}"><i class="bi bi-play-fill"></i> {{ song.total_plays|default:"0" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>Песни не найдены.</p>
+                {% endfor %}
+            </div>
+            {% include 'store/pagination.html' %}
+        {% else %}
+            <p>Песни не найдены.</p>
+        {% endif %}
+    </main>
+{% endblock %}

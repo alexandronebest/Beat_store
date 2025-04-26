@@ -1,24 +1,30 @@
+/* style.css */
+
+/* Определение переменных для цветов и стилей */
 :root {
   --footer-bg: #1a1a1a;
   --primary-color: #4CAF50;
   --dark-bg: #1a1a1a;
   --light-bg: #f5f5f5;
   --text-dark: #000000;
-  --text-light: #fff;
+  --text-light: #ffffff;
   --close-button-color: #ffffff;
   --transition: all 0.3s ease;
   --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.15);
   --like-color: rgb(255, 0, 0);
   --cart-color: #fefe02;
+  --highlight-color: #ffffff; /* Новый цвет для выделения элементов */
 }
 
+/* Сброс стилей */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* Общие стили для body */
 body {
   font-family: 'Montserrat', sans-serif;
   background: linear-gradient(135deg, var(--light-bg) 0%, #e8ecef 100%);
@@ -29,6 +35,7 @@ body {
   min-height: 100vh;
 }
 
+/* Заголовки */
 h1, h2, h3, h4, h5, h6 {  
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   color: var(--text-dark);
@@ -37,12 +44,14 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0.5px;
 }
 
+/* Текст и ссылки */
 p, a, span, li {
   font-size: 1rem;
   color: var(--text-dark);
   font-weight: 400;
 }
 
+/* Основной контент */
 main {
   flex: 1;
   padding: 2rem 1rem;
@@ -51,6 +60,7 @@ main {
   padding-bottom: 120px;
 }
 
+/* Навигационная панель */
 .navbar {
   background: linear-gradient(to right, var(--dark-bg), #2d2d2d);
   padding: 0.75rem 1rem;
@@ -63,10 +73,11 @@ main {
   align-items: center;
 }
 
+/* Логотип */
 .navbar-brand {
   font-size: 1.6rem;
   font-weight: 700;
-  color: var(--text-light);
+  color: var(--highlight-color);
   text-transform: uppercase;
   letter-spacing: 1px;
   transition: var(--transition);
@@ -77,12 +88,14 @@ main {
   text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
 }
 
+/* Секция авторизации */
 .auth-section {
   display: flex;
   align-items: center;
   gap: 1.2rem;
 }
 
+/* Кнопки авторизации */
 .auth-btn {
   background: var(--primary-color);
   padding: 0.6rem 1.5rem;
@@ -101,13 +114,30 @@ main {
   box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
 }
 
+/* Имя пользователя */
+.username {
+  color: var(--highlight-color); /* Изменен цвет для контраста */
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.username:hover {
+  color: var(--primary-color);
+}
+
+/* Кнопка гамбургера */
 .navbar-toggler {
   margin-right: 5px;
   border: none;
-  padding: 0.25rem 0.5rem;
-  color: var(--text-light);
+  padding: 0.25rem 0.75rem;
+  color: var(--highlight-color); /* Изменен цвет для контраста */
 }
 
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Боковое меню */
 .offcanvas {
   background: var(--dark-bg);
   color: var(--text-light);
@@ -119,10 +149,11 @@ main {
 
 .offcanvas-title {
   font-size: 1.6rem;
+  color: var(--highlight-color);
 }
 
 .offcanvas .nav-link {
-  color: var(--text-light);
+  color: var(--highlight-color);
   font-size: 1.2rem;
   padding: 0.75rem 1rem;
   transition: var(--transition);
@@ -131,8 +162,10 @@ main {
 .offcanvas .nav-link:hover {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
+  color: var(--primary-color);
 }
 
+/* Кнопка закрытия */
 .btn-close {
   background: var(--close-button-color) url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
   opacity: 0.5;
@@ -143,6 +176,7 @@ main {
   opacity: 1;
 }
 
+/* Поисковая форма */
 .search-form {
   margin: 0 1rem;
   position: relative;
@@ -166,16 +200,19 @@ main {
   outline: none;
 }
 
+/* Категории */
 .category {
   margin: 2rem 0;
 }
 
+/* Контейнер песен */
 .songs-container {
   position: relative;
   user-select: none;
   padding: 0 60px;
 }
 
+/* Список песен */
 .songs {
   display: flex;
   overflow-x: auto;
@@ -191,6 +228,7 @@ main {
   display: none;
 }
 
+/* Элемент песни */
 .song-item {
   flex: 0 0 200px;
   background: var(--text-light);
@@ -199,6 +237,7 @@ main {
   transition: var(--transition);
   cursor: pointer;
   overflow: hidden;
+  touch-action: manipulation; /* Улучшает сенсорное взаимодействие */
 }
 
 .song-item:hover {
@@ -206,12 +245,14 @@ main {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
+/* Контейнер изображения песни */
 .song-image-container {
   position: relative;
   width: 100%;
   padding-top: 100%;
 }
 
+/* Изображение песни */
 .song-image {
   position: absolute;
   top: 0;
@@ -222,6 +263,7 @@ main {
   border-radius: 15px 15px 0 0;
 }
 
+/* Элементы управления песней */
 .song-controls {
   position: absolute;
   top: 50%;
@@ -242,6 +284,7 @@ main {
   opacity: 1;
 }
 
+/* Кнопка лайка */
 .song-controls .like-button {
   position: relative;
   background: none;
@@ -275,9 +318,10 @@ main {
 
 .song-controls .like-button:hover {
   color: var(--like-color);
-  flop-shadow(0 0 8px rgba(255, 204, 0, 0.6));
+  filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.6));
 }
 
+/* Кнопка воспроизведения */
 .song-controls .play-button {
   background: var(--primary-color);
   border: none;
@@ -298,6 +342,7 @@ main {
   box-shadow: 0 0 15px rgba(76, 175, 80, 0.8);
 }
 
+/* Кнопка корзины */
 .song-controls .cart-button {
   background: var(--cart-color);
   border: none;
@@ -324,11 +369,13 @@ main {
   cursor: not-allowed;
 }
 
+/* Информация о песне */
 .song-info {
   padding: 1rem;
   text-align: center;
 }
 
+/* Название песни */
 .song-title {
   font-family: 'Montserrat', sans-serif;
   font-size: 1.2rem;
@@ -338,6 +385,7 @@ main {
   text-overflow: ellipsis;
 }
 
+/* Автор песни */
 .song-author {
   font-family: 'Montserrat', sans-serif;
   font-size: 0.95rem;
@@ -347,6 +395,7 @@ main {
   text-overflow: ellipsis;
 }
 
+/* Ссылка на автора */
 .song-author-link {
   color: var(--primary-color);
   text-decoration: none;
@@ -358,6 +407,7 @@ main {
   color: #388e3c;
 }
 
+/* Ссылка на жанр */
 .genre-link {
   color: var(--text-dark);
   display: block;
@@ -370,6 +420,7 @@ main {
   color: var(--primary-color);
 }
 
+/* Кнопки прокрутки */
 .scroll-button {
   position: absolute;
   top: 50%;
@@ -400,6 +451,7 @@ main {
   transform: translateY(-50%) scale(1.1);
 }
 
+/* Футер */
 .footer {
   background: linear-gradient(to top, var(--footer-bg), #2d2d2d);
   padding: 2rem 1rem;
@@ -430,6 +482,7 @@ main {
   transform: scale(1.05);
 }
 
+/* Кнопки футера */
 .contact-button, .beat-store-btn {
   background: #2d2d2d;
   color: var(--text-light);
@@ -451,6 +504,7 @@ main {
   box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
 }
 
+/* Иконки соцсетей */
 .social-icon {
   width: 32px;
   height: 32px;
@@ -461,6 +515,7 @@ main {
   transform: scale(1.2);
 }
 
+/* Секция плеера */
 .player-section {
   background: linear-gradient(to right, var(--dark-bg), #2d2d2d);
   padding: 1rem;
@@ -472,6 +527,7 @@ main {
   box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
 }
 
+/* Контейнер плеера */
 .player-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -485,6 +541,7 @@ main {
   display: none;
 }
 
+/* Информация о треке */
 .track-info {
   flex: 1;
   min-width: 150px;
@@ -499,6 +556,7 @@ main {
   text-overflow: ellipsis;
 }
 
+/* Элементы управления */
 .controls {
   flex: 1;
   display: flex;
@@ -508,24 +566,35 @@ main {
   min-width: 150px;
 }
 
+/* Кнопки управления */
 .btn-icon {
   background: none;
-  border: none;
-  color: var(--text-light);
+  border: 1px solid var(--highlight-color);
+  color: var(--highlight-color);
   font-size: 1.3rem;
   padding: 0.25rem;
   transition: var(--transition);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation; /* Улучшает сенсорное взаимодействие */
 }
 
 .btn-icon:hover {
   color: var(--primary-color);
+  border-color: var(--primary-color);
   transform: scale(1.1);
 }
 
+/* Кнопка воспроизведения */
 .btn-play {
   font-size: 1.6rem;
 }
 
+/* Контейнер прогресс-бара */
 .progress-container {
   flex: 1;
   max-width: 300px;
@@ -534,11 +603,12 @@ main {
   gap: 0.5rem;
 }
 
+/* Прогресс-бар */
 #progress-bar {
   -webkit-appearance: none;
   width: 100%;
   height: 6px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, Bookworm, 255, 0.2);
   border-radius: 3px;
   outline: none;
   transition: var(--transition);
@@ -554,6 +624,7 @@ main {
   box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
 }
 
+/* Время воспроизведения */
 #current-time, #total-time {
   font-size: 0.9rem;
   min-width: 40px;
@@ -561,15 +632,17 @@ main {
   color: var(--text-light);
 }
 
+/* Дополнительные элементы управления */
 .extra-controls {
   flex: 1;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 0.5rem;
-  min-width: 150px;
+  min-width: 200px;
 }
 
+/* Ползунок громкости */
 #volume-slider {
   -webkit-appearance: none;
   width: 80px;
@@ -590,6 +663,7 @@ main {
   box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
 }
 
+/* Кнопка лайка в плеере */
 #like-button-player {
   background: none;
   border: none;
@@ -608,19 +682,35 @@ main {
   color: var(--like-color);
 }
 
+/* Кнопка цены/корзины */
 #song-price {
-  color: var(--text-light);
+  color: var(--text-dark);
   font-size: 0.9rem;
   font-weight: 600;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 5px 10px;
+  background: var(--cart-color);
+  padding: 5px 12px;
   border-radius: 15px;
   white-space: nowrap;
   text-align: center;
-  min-width: 60px;
+  min-width: 70px;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: var(--transition);
+  cursor: pointer;
 }
 
-/* Медиа-запросы */
+#song-price:hover {
+  background: #ffca28;
+  transform: scale(1.05);
+}
+
+#song-price:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Медиа-запросы для адаптивности */
 @media (max-width: 768px) {
   .song-item {
     flex: 0 0 160px;
@@ -646,12 +736,14 @@ main {
   }
 
   .player-container {
-    flex-direction: column;
-    align-items: stretch;gap: 0.5rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .track-info, .controls, .progress-container, .extra-controls {
-    flex: none;
+    flex: 1;
     justify-content: center;
     margin: 0.5rem 0;
     min-width: 0;
@@ -683,8 +775,20 @@ main {
 
   #song-price {
     font-size: 0.8rem;
-    padding: 4px 8px;
-    min-width: 50px;
+    padding: 4px 10px;
+    min-width: 60px;
+    max-width: 80px;
+  }
+
+  .extra-controls {
+    min-width: 150px;
+    gap: 0.4rem;
+  }
+
+  .btn-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 1.2rem;
   }
 }
 
@@ -726,6 +830,8 @@ main {
   }
 
   .btn-icon {
+    width: 30px;
+    height: 30px;
     font-size: 1.1rem;
   }
 
@@ -735,8 +841,9 @@ main {
 
   #song-price {
     font-size: 0.75rem;
-    padding: 3px 6px;
-    min-width: 45px;
+    padding: 3px 8px;
+    min-width: 50px;
+    max-width: 70px;
   }
 
   #volume-slider {
@@ -744,13 +851,20 @@ main {
   }
 
   #like-button-player {
-    font-size: 1.1rem;
+    fontладка: 0px;
   }
 
   .extra-controls {
-    gap: 0.3rem;
+    min-width: 150px;
+    gap: 0.4rem;
     justify-content: center;
+    flex-wrap: nowrap;
+  }
+
+  .player-container {
+    flex-direction: row;
     flex-wrap: wrap;
+    gap: 0.3rem;
   }
 }
 
@@ -769,6 +883,8 @@ main {
   }
 
   .btn-icon {
+    width: 28px;
+    height: 28px;
     font-size: 1rem;
   }
 
@@ -797,8 +913,9 @@ main {
 
   #song-price {
     font-size: 0.7rem;
-    padding: 3px 5px;
-    min-width: 40px;
+    padding: 3px 6px;
+    min-width: 45px;
+    max-width: 60px;
   }
 
   #volume-slider {
@@ -811,7 +928,8 @@ main {
 
   .extra-controls {
     gap: 0.2rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
+    min-width: 100px;
   }
 }
