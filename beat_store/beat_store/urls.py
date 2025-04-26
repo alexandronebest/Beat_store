@@ -16,15 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth.views import LogoutView
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    path('admin/logout/', LogoutView.as_view(next_page='store:index'), name='admin_logout'),
     path('admin/', admin.site.urls),
-    path('', include('store.urls', namespace='store')),
-    path('accounts/', include('django.contrib.auth.urls')),  # Подключаем все маршруты аутентификации
+    path('', include('store.urls')),
 ]
 
+# Обслуживание медиафайлов в режиме отладки
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

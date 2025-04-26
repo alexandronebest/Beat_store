@@ -1,72 +1,133 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta name="csrf-token" content="{% csrf_token %}">
     <title>{% block title %}Beat Store{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
-    {% block extra_css %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}
+    {% endblock %}
 </head>
 <body>
+    <!-- Включение header.html -->
     {% include 'store/header.html' %}
+
     <main class="container my-4">
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-                </div>
-            {% endfor %}
+            <div class="my-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+                    </div>
+                {% endfor %}
+            </div>
         {% endif %}
-        {% block content %}{% endblock %}
-    </main>
-    {% include 'store/footer.html' %}
 
-    <section class="player-section">
-        <audio id="audio-player" preload="metadata">
-            <source id="audio-source" src="" type="audio/mpeg">
-            Ваш браузер не поддерживает аудио.
-        </audio>
-        <div class="player-container">
-            <div class="track-info">
-                <span id="current-song">Выберите песню для воспроизведения</span>
-            </div>
-            <div class="controls">
-                <button id="prev-button" class="btn-icon"><i class="bi bi-skip-start-fill"></i></button>
-                <button id="play-pause-button" class="btn-icon btn-play"><i class="bi bi-play-fill"></i></button>
-                <button id="next-button" class="btn-icon"><i class="bi bi-skip-end-fill"></i></button>
-                <div class="progress-container">
-                    <span id="current-time">0:00</span>
-                    <input type="range" id="progress-bar" min="0" max="1" step="0.01" value="0">
-                    <span id="total-time">0:00</span>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Плеер -->
+    <div class="player-section fixed-bottom bg-dark text-white p-3">
+        <div class="container">
+            <div class="row align-items-center flex-nowrap">
+                <div class="col-md-3 col-12 track-info">
+                    <span id="current-song" class="text-truncate">Выберите песню для воспроизведения</span>
                 </div>
-            </div>
-            <div class="extra-controls">
-                <button id="mute-button" class="btn-icon"><i class="bi bi-volume-up-fill"></i></button>
-                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
-                <button id="like-button-player" class="like-button" data-likes="0"><i class="bi bi-heart-fill"></i></button>
-                <span class="song-price" id="song-price">₽0.00</span>
+                <div class="col-md-4 col-12 controls-container">
+                    <div class="controls d-flex justify-content-center align-items-center">
+                        <audio id="audio-player" preload="none">
+                            <source id="audio-source" src="" type="audio/mpeg">
+                            Ваш браузер не поддерживает аудио.
+                        </audio>
+                        <button id="prev-button" class="btn btn-outline-light btn-icon mx-2" aria-label="Предыдущая песня">
+                            <i class="bi bi-skip-backward-fill"></i>
+                        </button>
+                        <button id="play-pause-button" class="btn btn-outline-light btn-icon mx-2" aria-label="Воспроизвести/Пауза">
+                            <i class="bi bi-play-fill"></i>
+                        </button>
+                        <button id="next-button" class="btn btn-outline-light btn-icon mx-2" aria-label="Следующая песня">
+                            <i class="bi bi-skip-forward-fill"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3 col-12 progress-container-wrapper">
+                    <div class="progress-container d-flex align-items-center">
+                        <input type="range" id="progress-bar" class="form-range me-2" min="0" max="1" step="0.01" value="0" aria-label="Прогресс воспроизведения">
+                        <span id="current-time" class="me-2">0:00</span>
+                        <span id="total-time">0:00</span>
+                    </div>
+                </div>
+                <div class="col-md-2 col-12 extra-controls-container">
+                    <div class="extra-controls d-flex align-items-center flex-nowrap">
+                        <button id="mute-button" class="btn btn-outline-light btn-icon me-2" aria-label="Включить/Выключить звук">
+                            <i class="bi bi-volume-up-fill"></i>
+                        </button>
+                        <input type="range" id="volume-slider" class="form-range me-2" min="0" max="1" step="0.01" value="0.5" aria-label="Громкость">
+                        <button id="like-button-player" class="btn btn-outline-light btn-icon me-2" data-likes="0" aria-label="Лайк">
+                            <i class="bi bi-heart-fill"></i>
+                        </button>
+                        <button id="song-price" class="btn btn-outline-light btn-icon text-truncate" data-song-id="0" title="Добавить в корзину" aria-label="Добавить в корзину" disabled>
+                            <i class="bi bi-cart-plus"></i> ₽0.00
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-    </section>
+    </div>
+
+    <!-- Футер -->
+    <footer class="bg-dark text-white text-center py-3">
+        <div class="container">
+            <span class="footer-brand">Beat Store</span>
+            <p class="mb-0">© 2025 Beat Store. Все права защищены.</p>
+            <button class="btn btn-outline-light mt-2 contact-button" data-bs-toggle="modal" data-bs-target="#contactModal">Связаться с нами</button>
+        </div>
+    </footer>
+
+    <!-- Модальное окно для контактов -->
+    <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contactModalLabel">Связаться с нами</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Свяжитесь с нами по email: <a href="mailto:support@beatstore.com">support@beatstore.com</a></p>
+                    <form>
+                        <div class="mb-3">
+                            <label for="contactName" class="form-label">Имя</label>
+                            <input type="text" class="form-control" id="contactName" placeholder="Ваше имя">
+                        </div>
+                        <div class="mb-3">
+                            <label for="contactMessage" class="form-label">Сообщение</label>
+                            <textarea class="form-control" id="contactMessage" rows="4" placeholder="Ваше сообщение"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Отправить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/hamburger.js' %}"></script>
     <script src="{% static 'js/scroll.js' %}"></script>
     <script src="{% static 'js/player.js' %}"></script>
     <script>
-        // Передаем данные песен из шаблона в глобальную переменную
-        window.songsData = {{ songs_json|safe|default:'[]' }};
         document.addEventListener('DOMContentLoaded', function() {
-            Player.init(window.songsData);
+            // Инициализация плеера с данными песен из контекста
+            const songsData = {{ songs_json|safe }};
+            Player.init(songsData);
         });
     </script>
-    {% block extra_js %}{% endblock %}
+    {% block extra_js %}
+    {% endblock %}
 </body>
 </html>

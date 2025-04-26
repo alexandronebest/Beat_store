@@ -5,7 +5,7 @@
 
 {% block extra_css %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/music_list.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -65,18 +65,22 @@
                                             aria-label="Воспроизвести">
                                         <i class="bi bi-play-fill"></i>
                                     </button>
-                                    <button class="buy-button" 
-                                            title="Добавить в корзину" 
-                                            onclick="location.href='{% url 'store:buy_song' song.id %}'"
-                                            aria-label="Купить">
-                                        <i class="bi bi-cart-plus"></i>
-                                    </button>
-                                    <button class="playlist-button" 
-                                            title="Добавить в плейлист" 
-                                            onclick="location.href='{% url 'store:add_to_playlist' song.id %}'"
-                                            aria-label="Добавить в плейлист">
-                                        <i class="bi bi-plus-circle"></i>
-                                    </button>
+                                    <form action="{% url 'store:add_to_cart' song.id %}" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="buy-button" 
+                                                title="Добавить в корзину" 
+                                                aria-label="Добавить в корзину">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </form>
+                                    <form action="{% url 'store:add_to_playlist' song.id %}" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="playlist-button" 
+                                                title="Добавить в плейлист" 
+                                                aria-label="Добавить в плейлист">
+                                            <i class="bi bi-plus-circle"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                             <div class="song-info">
@@ -112,5 +116,10 @@
                 behavior: 'smooth'
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const songsData = {{ songs_json|safe|default:'[]' }};
+            Player.updatePlaylist(songsData);
+        });
     </script>
 {% endblock %}

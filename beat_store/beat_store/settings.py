@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'store.apps.StoreConfig',  # Ваше приложение
+    'store.apps.StoreConfig',
 ]
 
 MIDDLEWARE = [
@@ -48,8 +48,8 @@ ROOT_URLCONF = 'beat_store.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'store' / 'templates'],  # Указываем путь к папке с шаблонами
-        'APP_DIRS': True,  # Включаем поиск шаблонов внутри приложений
+        'DIRS': [BASE_DIR / 'store' / 'templates'],
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -98,12 +98,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Authentication settings
-AUTH_USER_MODEL = 'store.User'  # Кастомная модель пользователя
-
-# URLs for authentication with full paths
-LOGIN_URL = '/accounts/login/'
+AUTH_USER_MODEL = 'store.User'
+LOGIN_URL = '/login/'  # Исправлено на соответствие маршруту в urls.py
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# Session settings
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False  # Установите True для HTTPS в продакшене
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Сессия завершается при закрытии браузера
 
 # Email settings (для отладки)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

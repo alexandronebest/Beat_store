@@ -6,10 +6,34 @@
 {% block content %}
     <div class="container my-4">
         <h1 class="text-center mb-4">Вход</h1>
-        <form method="post" class="filter-form">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% if form.errors %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                Неверное имя пользователя или пароль. Попробуйте снова.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+            </div>
+        {% endif %}
+        {% if next %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                Пожалуйста, войдите, чтобы продолжить.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+            </div>
+        {% endif %}
+        <form method="post" action="{% url 'store:login' %}" class="filter-form mx-auto" style="max-width: 400px;">
             {% csrf_token %}
             {{ form.as_p }}
+            <input type="hidden" name="next" value="{{ next|default:'/store/index' }}">
             <button type="submit" class="btn btn-primary w-100">Войти</button>
         </form>
+        <p class="text-center mt-3">
+            Нет аккаунта? <a href="{% url 'store:register' %}" class="text-primary">Зарегистрируйтесь</a>
+        </p>
     </div>
 {% endblock %}

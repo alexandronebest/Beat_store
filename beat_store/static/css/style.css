@@ -3,13 +3,14 @@
   --primary-color: #4CAF50;
   --dark-bg: #1a1a1a;
   --light-bg: #f5f5f5;
-  --text-dark: #333;
+  --text-dark: #ffffff;
   --text-light: #fff;
-  --close-button-color: #070000;
+  --close-button-color: #ffffff;
   --transition: all 0.3s ease;
   --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.15);
-  --like-color: rgb(255, 0, 0); /* Жёлтый цвет лайка как в Яндекс.Музыке */
+  --like-color: rgb(255, 0, 0);
+  --cart-color: #FFC107; /* Yellow for cart button */
 }
 
 *, *::before, *::after {
@@ -28,7 +29,7 @@ body {
   min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6 {  
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   color: var(--text-dark);
   margin-bottom: 1.5rem;
@@ -47,7 +48,7 @@ main {
   padding: 2rem 1rem;
   max-width: 1400px;
   margin: 0 auto;
-  padding-bottom: 120px; /* Отступ для фиксированного плеера */
+  padding-bottom: 120px;
 }
 
 .navbar {
@@ -183,6 +184,7 @@ main {
   padding: 1rem 0;
   scroll-behavior: smooth;
   gap: 1rem;
+  touch-action: pan-x;
 }
 
 .songs::-webkit-scrollbar {
@@ -207,7 +209,7 @@ main {
 .song-image-container {
   position: relative;
   width: 100%;
-  padding-top: 100%; /* 1:1 Aspect Ratio */
+  padding-top: 100%;
 }
 
 .song-image {
@@ -297,10 +299,11 @@ main {
   box-shadow: 0 0 15px rgba(76, 175, 80, 0.8);
 }
 
-.song-controls .buy-button {
-  background: transparent;
+.song-controls .cart-button {
+  background: var(--cart-color);
   border: none;
-  color: var(--text-light);
+  border-radius: 50%;
+  color: var(--text-dark);
   font-size: 1.6rem;
   padding: 0;
   width: 40px;
@@ -311,10 +314,15 @@ main {
   transition: var(--transition);
 }
 
-.song-controls .buy-button:hover {
-  color: var(--primary-color);
+.song-controls .cart-button:hover {
+  background: #ffca28;
   transform: scale(1.15);
-  filter: drop-shadow(0 0 8px rgba(76, 175, 80, 0.6));
+  filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.6));
+}
+
+.song-controls .cart-button:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
 }
 
 .song-info {
@@ -471,6 +479,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .player-section audio {
@@ -479,7 +488,9 @@ main {
 
 .track-info {
   flex: 1;
-  min-width: 200px;
+  min-width: 180px;
+  max-width: 300px;
+  overflow: hidden;
 }
 
 #current-song {
@@ -495,7 +506,8 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
+  min-width: 300px;
 }
 
 .btn-icon {
@@ -517,7 +529,7 @@ main {
 }
 
 .progress-container {
-  width: 350px;
+  width: 300px;
   margin-left: 1rem;
   display: flex;
   align-items: center;
@@ -556,8 +568,10 @@ main {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 0.75rem;
-  min-width: 200px;
+  gap: 0.5rem;
+  min-width: 180px;
+  max-width: 250px;
+  flex-wrap: nowrap;
 }
 
 .extra-controls > * {
@@ -567,7 +581,7 @@ main {
 
 #volume-slider {
   -webkit-appearance: none;
-  width: 100px;
+  width: 80px;
   height: 6px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
@@ -611,6 +625,8 @@ main {
   padding: 5px 10px;
   border-radius: 15px;
   white-space: nowrap;
+  max-width: 80px;
+  text-align: center;
 }
 
 /* Медиа-запросы */
@@ -641,17 +657,20 @@ main {
   .player-container {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.5rem;
   }
 
   .track-info, .controls, .extra-controls {
     flex: none;
     justify-content: center;
-    margin: 0.75rem 0;
+    margin: 0.5rem 0;
     min-width: 0;
+    max-width: 100%;
   }
 
   .progress-container {
     width: 100%;
+    max-width: 250px;
   }
 
   .song-controls {
@@ -669,8 +688,14 @@ main {
     font-size: 1.3rem;
   }
 
-  .song-controls .buy-button {
+  .song-controls .cart-button {
     font-size: 1.4rem;
+  }
+
+  .song-price {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    max-width: 70px;
   }
 }
 
@@ -702,12 +727,13 @@ main {
     font-size: 1.2rem;
   }
 
-  .song-controls .buy-button {
+  .song-controls .cart-button {
     font-size: 1.3rem;
   }
 
   #current-song {
     font-size: 0.9rem;
+    max-width: 200px;
   }
 
   .btn-icon {
@@ -719,16 +745,22 @@ main {
   }
 
   .song-price {
-    font-size: 0.8rem;
-    padding: 4px 8px;
+    font-size: 0.75rem;
+    padding: 3px 6px;
+    max-width: 60px;
   }
 
   #volume-slider {
-    width: 80px;
+    width: 70px;
   }
 
   #like-button-player {
     font-size: 1.1rem;
+  }
+
+  .extra-controls {
+    gap: 0.3rem;
+    justify-content: center;
   }
 }
 
@@ -744,6 +776,7 @@ main {
 
   .progress-container {
     width: 100%;
+    max-width: 200px;
   }
 
   .btn-icon {
@@ -769,13 +802,14 @@ main {
     font-size: 1rem;
   }
 
-  .song-controls .buy-button {
+  .song-controls .cart-button {
     font-size: 1.1rem;
   }
 
   .song-price {
     font-size: 0.7rem;
-    padding: 3px 6px;
+    padding: 3px 5px;
+    max-width: 50px;
   }
 
   #volume-slider {
@@ -784,5 +818,11 @@ main {
 
   #like-button-player {
     font-size: 1rem;
+  }
+
+  .extra-controls {
+    gap: 0.2rem;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
