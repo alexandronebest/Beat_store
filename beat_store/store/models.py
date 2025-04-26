@@ -160,7 +160,58 @@ class Transaction(models.Model):
         verbose_name = 'Транзакция'
         verbose_name_plural = 'Транзакции'
 
+class Purchase(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='bulk_purchases',
+        verbose_name='Покупатель'
+    )
+    songs = models.ManyToManyField(
+        Song,
+        related_name='purchases',
+        verbose_name='Песни'
+    )
+    total_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name='Общая сумма'
+    )
+    purchase_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата покупки'
+    )
+
+    def __str__(self):
+        return f"Purchase by {self.user.username} on {self.purchase_date}"
+
+    class Meta:
+        verbose_name = 'Покупка'
+        verbose_name_plural = 'Покупки'
+
+class Cart(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='cart',
+        verbose_name='Пользователь'
+    )
+    songs = models.ManyToManyField(
+        Song,
+        related_name='carts',
+        blank=True,
+        verbose_name='Песни'
+    )
+
+    def __str__(self):
+        return f'Cart of {self.user.username}'
+
+    class Meta:
+        verbose_name = 'Корзина'
+        verbose_name_plural = 'Корзины'
+
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
+        Cart.objects.create(user=instance)

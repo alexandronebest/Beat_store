@@ -14,6 +14,11 @@ from django import forms
 from .models import Song, Genre, Transaction, Profile, User
 from .forms import SongForm, ProfileForm, CustomUserCreationForm
 import json
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Song, Cart, Purchase
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -579,3 +584,61 @@ def add_to_playlist(request, song_id):
             'message': f'Произошла ошибка при добавлении в плейлист: {str(e)}',
             'error': str(e)
         }, status=500)
+    
+
+
+
+@login_required
+def process_purchase(request):
+    # Получаем корзину пользователя
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    songs = cart.songs.all()
+    
+    if not songs:
+        messages.error(request, "Ваша корзина пуста.")
+        return redirect('store:cart')
+
+    # Вычисляем общую стоимость
+    total_price = sum(song.price for song in songs)
+    
+    # Проверяем баланс
+    if request.user.balance < total_price:
+        messages.error(request, f"Недостаточно средств. Ваш баланс: ₽{request.user.balance:.2f}. Необходимо: ₽{total_price:.2f}.")
+        return redirect('store:cart')
+
+    # Выполняем покупку в транзакции
+    try:
+        with transaction.atomic():
+            # Списываем деньги
+            request.user.balance -= total_price
+            request.user.save()
+
+            # Создаем запись о покупке
+            purchase = Purchase.objects.create(
+                user=request.user,
+                total_price=total_price
+            )
+            purchase.songs.set(songs)
+
+            # Очищаем корзину
+            cart.songs.clear()
+
+            # Добавляем сообщение об успехе
+            messages.success(request, "Покупка успешно завершена! Договор сформирован.")
+            
+            # Перенаправляем на страницу с договором
+            return redirect('store:purchase_contract', purchase_id=purchase.id)
+            
+    except Exception as e:
+        messages.error(request, f"Ошибка при обработке покупки: {str(e)}")
+        return redirect('store:cart')
+
+@login_required
+def purchase_contract(request, purchase_id):
+    purchase = get_object_or_404(Purchase, id=purchase_id, user=request.user)
+    context = {
+        'purchase': purchase,
+        'songs': purchase.songs.all(),
+        'total_price': purchase.total_price,
+    }
+    return render(request, 'store/purchase_contract.html', context)

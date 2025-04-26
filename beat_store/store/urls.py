@@ -35,9 +35,11 @@ urlpatterns = [
     path('cart/', views.cart, name='cart'),
     path('buy/<int:song_id>/', views.buy_song, name='buy_song'),
     path('purchase/', views.process_purchase, name='process_purchase'),
+    path('purchase/<int:purchase_id>/contract/', views.purchase_contract, name='purchase_contract'),
     
     # Пополнение баланса
     path('top-up/', views.top_up_balance, name='top_up_balance'),
+    
     # Добавление в плейлист
-    path('playlist/add/<int:song_id>/', views.add_to_playlist, name='add_to_playlist'),
-    ]
+    # path('playlist/add/<int:song_id>/', views.add_to_playlist, name='add_to_playlist'),
+]

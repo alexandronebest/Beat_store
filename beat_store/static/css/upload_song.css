@@ -1,0 +1,103 @@
+:root {
+    --primary-color: #28a745;
+    --light-bg: #f8f9fa;
+    --like-color: #dc3545;
+    --text-color: #333;
+    --border-color: #dee2e6;
+}
+
+.upload-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: var(--light-bg);
+    border: 1px solid var(--border-color);
+}
+
+.upload-song-form .form-label {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.upload-song-form .form-control,
+.upload-song-form .form-select {
+    border-radius: 0.25rem;
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+}
+
+.upload-song-form .form-control:focus,
+.upload-song-form .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.upload-song-form .invalid-feedback {
+    color: var(--like-color);
+    font-size: 0.875rem;
+}
+
+.upload-song-form .auth-btn {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.upload-song-form .auth-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.upload-song-form .checkout-button {
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease;
+}
+
+.upload-song-form .checkout-button:hover {
+    background-color: #218838;
+}
+
+.alert {
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+@media (max-width: 576px) {
+    .upload-form-container {
+        padding: 1.5rem;
+    }
+
+    .upload-song-form .form-control,
+    .upload-song-form .form-select {
+        font-size: 0.9rem;
+    }
+
+    .upload-song-form .auth-btn,
+    .upload-song-form .checkout-button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .upload-song-form .text-end {
+        text-align: center !important;
+    }
+}
