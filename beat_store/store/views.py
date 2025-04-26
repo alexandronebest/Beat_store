@@ -106,16 +106,30 @@ def music_list(request):
     return render(request, 'store/music_list.html', context)
 
 # Список авторов
+# def authors_list(request):
+#     authors = User.objects.filter(song__isnull=False).distinct().order_by('username')
+#     paginator = Paginator(authors, 12)
+#     page_number = request.GET.get('page')
+#     page_obj = paginator.get_page(page_number)
+
+#     context = {
+#         'page_obj': page_obj,
+#     }
+#     return render(request, 'store/authors_list.html', context)
 def authors_list(request):
-    authors = User.objects.filter(song__isnull=False).distinct().order_by('username')
-    paginator = Paginator(authors, 12)
+    # Фильтруем пользователей, у которых есть песни
+    authors = User.objects.filter(songs__isnull=False).distinct().order_by('username')
+    # Получаем связанные профили
+    profiles = Profile.objects.filter(user__in=authors).select_related('user')
+    # Пагинация
+    paginator = Paginator(profiles, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     context = {
         'page_obj': page_obj,
     }
-    return render(request, 'store/authors_list.html', context)
+    return render(request, 'store/profiles.html', context)
 
 # Плейлист пользователя
 @login_required

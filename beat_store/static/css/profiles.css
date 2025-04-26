@@ -1,128 +1,248 @@
+/* profiles.css */
+
+/* Определение переменных для цветов и стилей */
+:root {
+  --footer-bg: #1a1a1a;
+  --primary-color: #4CAF50; /* Зелёный для имён и кнопок */
+  --profile-accent: #FFC107; /* Жёлтый для акцентов */
+  --dark-bg: #1a1a1a;
+  --light-bg: #f5f5f5;
+  --text-dark: #000000;
+  --text-light: #ffffff;
+  --transition: all 0.3s ease;
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.15);
+  --like-color: rgb(255, 0, 0);
+  --cart-color: #fefe02;
+}
+
+/* Сброс стилей */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Стили для секции авторов */
 .authors-container {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
+  position: relative;
+  user-select: none;
+  padding: 0 60px;
+}
+
+/* Список авторов */
+.authors {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 1rem 0;
+  scroll-behavior: smooth;
+  gap: 1.5rem;
+  touch-action: pan-x;
+}
+
+.authors::-webkit-scrollbar {
+  display: none;
+}
+
+/* Элемент автора */
+.author-item {
+  flex: 0 0 180px;
+  background: var(--text-light);
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-dark);
+  text-decoration: none;
+}
+
+.author-item:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Фото автора */
+.author-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Имя автора */
+.author-name {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-top: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  color: var(--primary-color); /* Зелёный */
+  transition: var(--transition);
+}
+
+.author-item:hover .author-name {
+  color: #388e3c; /* Тёмный зелёный для ховера */
+}
+
+/* Статус автора */
+.author-status {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  color: var(--profile-accent); /* Жёлтый для акцента */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+/* Количество песен */
+.author-songs {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--profile-accent); /* Жёлтый */
+  margin-top: 0.5rem;
+}
+
+/* Кнопки прокрутки */
+.scroll-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--primary-color); /* Зелёный */
+  width: 45px;
+  height: 45px;
+  box-shadow: var(--shadow-md);
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  transition: var(--transition);
+  z-index: 10;
+}
+
+.scroll-button.left {
+  left: 10px;
+}
+
+.scroll-button.right {
+  right: 10px;
+}
+
+.scroll-button:hover {
+  background: var(--primary-color);
+  color: var(--text-light);
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* Заголовок */
+.category h2 {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 768px) {
+  .authors-container {
     padding: 0 40px;
   }
-  
-  .authors {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 20px;
-    padding: 15px 0;
-    scroll-behavior: smooth;
-  }
-  
+
   .author-item {
-    flex: 0 0 200px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border-radius: 8px;
-    background: #fff;
+    flex: 0 0 150px;
+    padding: 0.75rem;
   }
-  
-  .author-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    background-color: #f8f9fa;
-  }
-  
+
   .author-photo {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 10px;
+    width: 100px;
+    height: 100px;
   }
-  
+
   .author-name {
-    margin: 0;
-    font-size: 1.2em;
-    color: #333;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
+    font-size: 1rem;
   }
-  
-  .author-status {
-    margin: 5px 0 0;
-    font-size: 0.9em;
-    color: #777;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
+
+  .author-status,
+  .author-songs {
+    font-size: 0.85rem;
   }
-  
+
   .scroll-button {
-    z-index: 1;
-    background-color: rgba(255, 255, 255, 0.9);
-    border: 1px solid #ccc;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 1.5em;
-    border-radius: 50%;
     width: 40px;
     height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
+    font-size: 1.3rem;
   }
-  
-  .scroll-button:hover {
-    background-color: var(--primary-color);
-    color: #fff;
+}
+
+@media (max-width: 576px) {
+  .authors-container {
+    padding: 0 30px;
   }
-  
-  @media (max-width: 768px) {
-    .author-item {
-      flex: 0 0 150px;
-    }
-  
-    .author-photo {
-      width: 100px;
-      height: 100px;
-    }
-  
-    .author-name {
-      font-size: 1em;
-    }
-  
-    .author-status {
-      font-size: 0.8em;
-    }
-  
-    .scroll-button {
-      width: 30px;
-      height: 30px;
-      font-size: 1.2em;
-    }
+
+  .author-item {
+    flex: 0 0 130px;
   }
-  
-  @media (max-width: 480px) {
-    .author-item {
-      flex: 0 0 120px;
-    }
-  
-    .author-photo {
-      width: 80px;
-      height: 80px;
-    }
-  
-    .author-name {
-      font-size: 0.9em;
-    }
-  
-    .author-status {
-      font-size: 0.7em;
-    }
-  
-    .authors-container {
-      padding: 0 30px;
-    }
+
+  .author-photo {
+    width: 80px;
+    height: 80px;
   }
+
+  .author-name {
+    font-size: 0.9rem;
+  }
+
+  .author-status,
+  .author-songs {
+    font-size: 0.8rem;
+  }
+
+  .scroll-button {
+    width: 35px;
+    height: 35px;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .authors-container {
+    padding: 0 20px;
+  }
+
+  .author-item {
+    flex: 0 0 110px;
+  }
+
+  .author-photo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .author-name {
+    font-size: 0.85rem;
+  }
+
+  .author-status,
+  .author-songs {
+    font-size: 0.75rem;
+  }
+
+  .scroll-button {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+}
