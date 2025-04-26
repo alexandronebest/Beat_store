@@ -6,10 +6,23 @@
 {% block extra_css %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 {% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
+    <main>
+        <!-- Сообщения об успехе или ошибке -->
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <section class="profile-section mb-5">
             <div class="profile-header">
                 <div class="profile-image-container">
@@ -19,7 +32,7 @@
                 <div class="profile-details">
                     <h1 class="profile-title">{{ profile.user.username }}</h1>
                     {% if request.user == profile.user %}
-                        <p class="profile-balance"><strong>Баланс:</strong> ₽{{ request.user.balance }}</p>
+                        <p class="profile-balance"><strong>Баланс:</strong> ₽{{ request.user.balance }} <a href="{% url 'store:top_up_balance' %}" class="btn btn-primary btn-sm ms-2">Пополнить</a></p>
                     {% endif %}
                     <div class="profile-stats">
                         <span><i class="bi bi-heart-fill"></i> {{ profile.total_likes }} лайков</span>
@@ -30,23 +43,18 @@
                         {% if profile.status %}{{ profile.status }}{% else %}<em>Статус не указан</em>{% endif %}
                     </p>
                     {% if request.user == profile.user %}
-                        <button class="edit-status-btn btn btn-outline-primary" onclick="toggleStatusForm()">Изменить статус</button>
-                        <form method="post" action="{% url 'store:profile' profile.user.username %}" class="status-form hidden mt-3" id="status-form">
+                        <button class="edit-profile-btn btn btn-outline-primary" onclick="toggleProfileForm()">Редактировать профиль</button>
+                        <form method="post" enctype="multipart/form-data" action="{% url 'store:profile' profile.user.username %}" class="profile-form hidden mt-3" id="profile-form">
                             {% csrf_token %}
-                            <div class="input-group">
-                                <input type="text" name="status" id="status" class="form-control" 
-                                       value="{{ profile.status|default:'' }}" maxlength="100" 
-                                       placeholder="Введите новый статус" required pattern=".{1,100}" 
-                                       title="Статус должен быть от 1 до 100 символов">
-                                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Сохранить</button>
+                            <div class="mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">Статус</label>
+                                {{ form.status }}
                             </div>
-                        </form>
-                        <form method="post" enctype="multipart/form-data" action="{% url 'store:upload_photo' %}" class="photo-upload-form mt-3">
-                            {% csrf_token %}
-                            <div class="input-group">
-                                <input type="file" name="photo" class="form-control photo-input" accept="image/*" required>
-                                <button type="submit" class="btn btn-primary">Обновить фото</button>
+                            <div class="mb-3">
+                                <label for="{{ form.photo.id_for_label }}" class="form-label">Фото профиля</label>
+                                {{ form.photo }}
                             </div>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Сохранить</button>
                         </form>
                     {% endif %}
                 </div>
@@ -145,6 +153,12 @@
 
         <section class="category mb-5">
             <h2>Понравившиеся песни</h2>
+            <!-- Отладочный вывод для проверки liked_songs -->
+            {% if liked_songs %}
+                <p style="color: green;">Найдено {{ liked_songs|length }} понравившихся песен.</p>
+            {% else %}
+                <p style="color: red;">Понравившиеся песни отсутствуют.</p>
+            {% endif %}
             <div class="songs-container position-relative">
                 <button class="scroll-button left" onclick="scrollSongs('left', 'liked-songs')" aria-label="Прокрутить влево">❮</button>
                 <div class="songs" id="liked-songs">
@@ -197,7 +211,7 @@
                 <button class="scroll-button right" onclick="scrollSongs('right', 'liked-songs')" aria-label="Прокрутить вправо">❯</button>
             </div>
         </section>
-    </div>
+    </main>
 {% endblock %}
 
 {% block extra_js %}
@@ -210,19 +224,23 @@
             }
             Player.updatePlaylist(songsData);
 
-            // Валидация формы загрузки фото
-            document.querySelector('.photo-upload-form').addEventListener('submit', function(e) {
-                const fileInput = document.querySelector('.photo-input');
-                const file = fileInput.files[0];
-                const maxSize = 5 * 1024 * 1024; // 5MB
-                if (file && file.size > maxSize) {
-                    e.preventDefault();
-                    alert('Файл слишком большой. Максимальный размер: 5MB.');
-                }
-                if (file && !file.type.startsWith('image/')) {
-                    e.preventDefault();
-                    alert('Пожалуйста, выберите изображение.');
-                }
+            // Валидация формы профиля
+            document.querySelectorAll('.profile-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const fileInput = form.querySelector('input[type="file"]');
+                    if (fileInput && fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        const maxSize = 5 * 1024 * 1024; // 5MB
+                        if (file.size > maxSize) {
+                            e.preventDefault();
+                            alert('Файл слишком большой. Максимальный размер: 5MB.');
+                        }
+                        if (!file.type.startsWith('image/')) {
+                            e.preventDefault();
+                            alert('Пожалуйста, выберите изображение.');
+                        }
+                    }
+                });
             });
         });
 
@@ -243,8 +261,8 @@
             });
         }
 
-        function toggleStatusForm() {
-            const form = document.getElementById('status-form');
+        function toggleProfileForm() {
+            const form = document.getElementById('profile-form');
             form.classList.toggle('hidden');
         }
     </script>

@@ -9,16 +9,15 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.db.models import Count, F
 from django.contrib.auth.views import LoginView
-from django.contrib.auth.models import User
 from django.contrib.auth import login
-from django.contrib.auth.forms import UserCreationForm
 from django import forms
-from .models import Song, Genre, Transaction
-from .forms import SongForm
+from .models import Song, Genre, Transaction, Profile, User
+from .forms import SongForm, ProfileForm, CustomUserCreationForm
 import json
 
 logger = logging.getLogger(__name__)
 
+# Форма для пополнения баланса
 class TopUpBalanceForm(forms.Form):
     amount = forms.DecimalField(
         max_digits=10,
@@ -28,6 +27,7 @@ class TopUpBalanceForm(forms.Form):
         widget=forms.NumberInput(attrs={'step': '0.01', 'min': '0.01'})
     )
 
+# Кастомный логин
 class CustomLoginView(LoginView):
     template_name = 'store/login.html'
     redirect_authenticated_user = True
@@ -39,6 +39,7 @@ class CustomLoginView(LoginView):
         messages.error(self.request, 'Неверное имя пользователя или пароль.')
         return super().form_invalid(form)
 
+# Главная страница
 def index(request):
     top_songs = Song.objects.annotate(like_count=Count('likes')).order_by('-like_count', '-total_plays')[:10]
     new_songs = Song.objects.order_by('-created_at')[:10]
@@ -65,6 +66,7 @@ def index(request):
     }
     return render(request, 'store/index.html', context)
 
+# Список музыки
 def music_list(request):
     songs = Song.objects.all().order_by('-created_at')
     genres = Genre.objects.all()
@@ -103,6 +105,7 @@ def music_list(request):
     }
     return render(request, 'store/music_list.html', context)
 
+# Список авторов
 def authors_list(request):
     authors = User.objects.filter(song__isnull=False).distinct().order_by('username')
     paginator = Paginator(authors, 12)
@@ -114,6 +117,7 @@ def authors_list(request):
     }
     return render(request, 'store/authors_list.html', context)
 
+# Плейлист пользователя
 @login_required
 def playlist(request):
     songs = Song.objects.filter(transaction__buyer=request.user, transaction__is_successful=True).order_by('-created_at')
@@ -140,24 +144,41 @@ def playlist(request):
     }
     return render(request, 'store/playlist.html', context)
 
+# Регистрация
 def register(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
+            Profile.objects.get_or_create(user=user)  # Создаём профиль при регистрации
             messages.success(request, 'Регистрация успешна!')
             return redirect('store:index')
         else:
             messages.error(request, 'Ошибка при регистрации. Проверьте введенные данные.')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render(request, 'store/register.html', {'form': form})
 
+# Профиль пользователя
 @login_required
 def profile(request, username):
+    user = get_object_or_404(User, username=username)
+    profile = get_object_or_404(Profile, user=user)
     is_own_profile = request.user.username == username
-    songs = Song.objects.filter(author__username=username).order_by('-created_at')
+    songs = Song.objects.filter(author=user).order_by('-created_at')
+    liked_songs = Song.objects.filter(likes=user).order_by('-created_at')
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Профиль успешно обновлён.')
+            return redirect('store:profile', username=username)
+        else:
+            messages.error(request, 'Ошибка при обновлении профиля. Проверьте данные.')
+    else:
+        form = ProfileForm(instance=profile)
 
     songs_json = [
         {
@@ -169,17 +190,21 @@ def profile(request, username):
             'price': float(song.price),
             'total_plays': song.total_plays
         }
-        for song in songs
+        for song in (list(songs) + list(liked_songs))
     ]
 
     context = {
-        'username': username,
+        'profile': profile,
         'is_own_profile': is_own_profile,
         'songs': songs,
+        'liked_songs': liked_songs,
         'songs_json': json.dumps(songs_json, ensure_ascii=False),
+        'form': form,
     }
+    logger.debug(f"Profile view: username={username}, songs={songs.count()}, liked_songs={liked_songs.count()}")
     return render(request, 'store/profile.html', context)
 
+# Загрузка песни
 @login_required
 def upload_song(request):
     if request.method == 'POST':
@@ -196,6 +221,50 @@ def upload_song(request):
         form = SongForm()
     return render(request, 'store/upload_song.html', {'form': form})
 
+# Добавление песни
+@login_required
+def add_music(request):
+    if request.method == 'POST':
+        form = SongForm(request.POST, request.FILES)
+        if form.is_valid():
+            song = form.save(commit=False)
+            song.author = request.user
+            song.save()
+            messages.success(request, 'Песня успешно добавлена.')
+            return redirect('store:profile', username=request.user.username)
+        else:
+            messages.error(request, 'Ошибка при добавлении песни. Проверьте данные.')
+    else:
+        form = SongForm()
+    return render(request, 'store/add_music.html', {'form': form})
+
+# Редактирование песни
+@login_required
+def edit_music(request, song_id):
+    song = get_object_or_404(Song, id=song_id, author=request.user)
+    if request.method == 'POST':
+        form = SongForm(request.POST, request.FILES, instance=song)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Песня успешно отредактирована.')
+            return redirect('store:profile', username=request.user.username)
+        else:
+            messages.error(request, 'Ошибка при редактировании песни. Проверьте данные.')
+    else:
+        form = SongForm(instance=song)
+    return render(request, 'store/edit_music.html', {'form': form, 'song': song})
+
+# Удаление песни
+@login_required
+def delete_music(request, song_id):
+    song = get_object_or_404(Song, id=song_id, author=request.user)
+    if request.method == 'POST':
+        song.delete()
+        messages.success(request, 'Песня успешно удалена.')
+        return redirect('store:profile', username=request.user.username)
+    return redirect('store:profile', username=request.user.username)
+
+# Лайк песни
 @login_required
 @require_POST
 @csrf_protect
@@ -214,17 +283,14 @@ def like_song(request, song_id):
 
         if user in song.likes.all():
             song.likes.remove(user)
-            song.total_likes = F('total_likes') - 1
             liked = False
             logger.debug(f"Пользователь {user.username} убрал лайк с песни {song_id}")
         else:
             song.likes.add(user)
-            song.total_likes = F('total_likes') + 1
             liked = True
             logger.debug(f"Пользователь {user.username} поставил лайк на песню {song_id}")
 
         song.save()
-        song.refresh_from_db()
 
         return JsonResponse({
             'success': True,
@@ -240,6 +306,7 @@ def like_song(request, song_id):
             'error': str(e)
         }, status=403 if 'permission' in str(e).lower() else 500)
 
+# Воспроизведение песни
 @login_required
 @require_POST
 @csrf_protect
@@ -264,6 +331,7 @@ def play_song(request, song_id):
             'error': str(e)
         }, status=500)
 
+# Добавление в корзину
 @login_required
 @require_POST
 @csrf_protect
@@ -309,6 +377,7 @@ def add_to_cart(request, song_id):
             'error': str(e)
         }, status=403 if 'permission' in str(e).lower() else 500)
 
+# Корзина
 @login_required
 def cart(request):
     cart = request.session.get('cart', [])
@@ -336,6 +405,7 @@ def cart(request):
     }
     return render(request, 'store/cart.html', context)
 
+# Удаление из корзины
 @login_required
 @require_POST
 @csrf_protect
@@ -365,6 +435,7 @@ def remove_from_cart(request, song_id):
             'error': str(e)
         }, status=500)
 
+# Покупка одной песни
 @login_required
 def buy_song(request, song_id):
     song = get_object_or_404(Song, id=song_id)
@@ -392,6 +463,7 @@ def buy_song(request, song_id):
     }
     return render(request, 'store/buy_song.html', context)
 
+# Обработка покупки
 @login_required
 @require_POST
 @csrf_protect
@@ -420,7 +492,7 @@ def process_purchase(request):
 
         request.session['cart'] = []
         request.session.modified = True
-        logger.debug(f"Корзина очищена после покупки для пользователя {user.username}")
+        logger.debug(f"Корзина очищена после покупки для пользователя {request.user.username}")
         return JsonResponse({
             'success': True,
             'message': 'Покупка успешно завершена'
@@ -433,6 +505,7 @@ def process_purchase(request):
             'error': str(e)
         }, status=500)
 
+# Пополнение баланса
 @login_required
 def top_up_balance(request):
     if request.method == 'POST':
