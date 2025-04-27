@@ -435,9 +435,9 @@ const Player = (function () {
     // Переключение лайка
     async function toggleLike(songId, button, callback) {
         try {
-            console.log(`Отправка запроса на лайк/удаление лайка для песни ${songId}: /like/${songId}/`);
+            console.log(`Отправка запроса на лайк/удаление лайка для песни ${songId}: /like_song/${songId}/`);
             console.log('CSRF-токен:', csrfToken);
-            const response = await fetch(`/like/${songId}/`, {
+            const response = await fetch(`/like_song/${songId}/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrfToken,
@@ -469,11 +469,11 @@ const Player = (function () {
             }
         } catch (error) {
             console.error(`Ошибка при обработке лайка для песни ${songId}:`, error.message);
-            let userMessage = 'Не удалось поставить/убрать лайк. Проверьте, авторизованы ли вы.';
+            let userMessage = 'Не удалось поставить/убрать лайк. Попробуйте снова.';
             if (error.message.includes('403')) {
                 userMessage = 'Пожалуйста, войдите в аккаунт.';
             } else if (error.message.includes('404')) {
-                userMessage = 'Песня не найдена.';
+                userMessage = 'Маршрут для лайка не найден. Проверьте настройки сервера.';
             }
             alert(userMessage);
         }

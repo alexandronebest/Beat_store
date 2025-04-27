@@ -298,6 +298,14 @@ def like_song(request, song_id):
     try:
         song = get_object_or_404(Song, id=song_id)
         user = request.user
+        if not user.is_authenticated:
+            logger.warning(f"Неавторизованный доступ к like_song для song_id {song_id}")
+            return JsonResponse({
+                'success': False,
+                'message': 'Пожалуйста, авторизуйтесь для выполнения этого действия.',
+                'error': 'User not authenticated'
+            }, status=403)
+        
         if user in song.likes.all():
             song.likes.remove(user)
             liked = False
@@ -306,7 +314,11 @@ def like_song(request, song_id):
             song.likes.add(user)
             liked = True
             logger.debug(f"Пользователь {user.username} поставил лайк на песню {song_id}")
+        
+        # Обновляем total_likes
+        song.total_likes = song.likes.count()
         song.save()
+        
         return JsonResponse({
             'success': True,
             'liked': liked,
@@ -317,7 +329,7 @@ def like_song(request, song_id):
         logger.error(f"Ошибка в like_song для song_id {song_id}: {str(e)}")
         return JsonResponse({
             'success': False,
-            'message': f'Произошла ошибка при обработке лайка: {str(e)}',
+            'message': 'Не удалось поставить/убрать лайк. Попробуйте снова.',
             'error': str(e)
         }, status=500)
 
@@ -359,7 +371,7 @@ def add_to_cart(request, song_id):
             return redirect('store:cart')
         if song not in cart.songs.all():
             cart.songs.add(song)
-            logger.debug(f"Пользователь {user.username} добавил песню {song_id} в корзину")
+            logger.debug(f"Пользователь {request.user.username} добавил песню {song_id} в корзину")
             messages.success(request, f'Песня "{song.title}" добавлена в корзину.')
             return redirect('store:cart')
         logger.debug(f"Песня {song_id} уже в корзине пользователя {request.user.username}")
@@ -579,7 +591,7 @@ def add_to_playlist(request, song_id):
                 'in_playlist': True
             }, status=200)
         playlist.songs.add(song)
-        logger.debug(f"Пользователь {user.username} добавил песню {song_id} в плейлист")
+        logger.debug(f"Пользователь {request.user.username} добавил песню {song_id} в плейлист")
         return JsonResponse({
             'success': True,
             'message': f'Песня "{song.title}" добавлена в плейлист',
