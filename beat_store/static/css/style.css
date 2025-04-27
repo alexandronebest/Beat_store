@@ -47,7 +47,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Текст и ссылки */
 p, a, span, li {
   font-size: 1rem;
-  color: var(--text-dark);
+  color:#ffd000;
   font-weight: 400;
 }
 

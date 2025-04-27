@@ -50,11 +50,11 @@
                             </button>
                         </form>
                         <form action="{% url 'store:remove_from_cart' song.id %}" method="post" class="cart-remove-form">
-                            {% csrf_token %}
-                            <button type="submit" class="btn cart-remove-button btn-sm">
-                                <i class="bi bi-trash me-1"></i> Удалить
-                            </button>
-                        </form>
+    {% csrf_token %}
+    <button type="submit" class="btn cart-remove-button btn-sm">
+        <i class="bi bi-trash me-1"></i> Удалить
+    </button>
+</form>
                     </div>
                 </div>
             {% endfor %}
