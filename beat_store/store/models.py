@@ -4,6 +4,7 @@ from django.db.models import Count, Sum
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+
 class User(AbstractUser):
     email = models.EmailField(unique=True, verbose_name='Электронная почта')
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name='Баланс')
@@ -16,6 +17,7 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+
 class Genre(models.Model):
     name = models.CharField(max_length=50, unique=True, verbose_name='Название')
 
@@ -25,6 +27,7 @@ class Genre(models.Model):
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
+
 
 class Song(models.Model):
     title = models.CharField(max_length=100, verbose_name='Название')
@@ -74,6 +77,13 @@ class Song(models.Model):
             models.Index(fields=['total_plays']),
             models.Index(fields=['author', 'created_at']),
         ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(price__gte=0),
+                name='song_price_non_negative'
+            )
+        ]
+
 
 class Profile(models.Model):
     user = models.OneToOneField(
@@ -110,6 +120,7 @@ class Profile(models.Model):
         verbose_name = 'Профиль'
         verbose_name_plural = 'Профили'
 
+
 class Playlist(models.Model):
     user = models.ForeignKey(
         User,
@@ -131,6 +142,10 @@ class Playlist(models.Model):
     class Meta:
         verbose_name = 'Плейлист'
         verbose_name_plural = 'Плейлисты'
+        indexes = [
+            models.Index(fields=['user', 'created_at']),
+        ]
+
 
 class Transaction(models.Model):
     buyer = models.ForeignKey(
@@ -159,6 +174,16 @@ class Transaction(models.Model):
     class Meta:
         verbose_name = 'Транзакция'
         verbose_name_plural = 'Транзакции'
+        indexes = [
+            models.Index(fields=['buyer', 'created_at']),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(amount__gte=0),
+                name='transaction_amount_non_negative'  # Уникальное имя
+            )
+        ]
+
 
 class Purchase(models.Model):
     user = models.ForeignKey(
@@ -183,11 +208,21 @@ class Purchase(models.Model):
     )
 
     def __str__(self):
-        return f"Purchase by {self.user.username} on {self.purchase_date}"
+        return f'Покупка от {self.user.username} ({self.purchase_date})'
 
     class Meta:
         verbose_name = 'Покупка'
         verbose_name_plural = 'Покупки'
+        indexes = [
+            models.Index(fields=['user', 'purchase_date']),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(total_price__gte=0),
+                name='purchase_total_price_non_negative'
+            )
+        ]
+
 
 class Cart(models.Model):
     user = models.OneToOneField(
@@ -204,14 +239,81 @@ class Cart(models.Model):
     )
 
     def __str__(self):
-        return f'Cart of {self.user.username}'
+        return f'Корзина {self.user.username}'
 
     class Meta:
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзины'
+
+
+class Contract(models.Model):
+    purchase = models.ForeignKey(
+        Purchase,
+        on_delete=models.CASCADE,
+        related_name='contracts',
+        verbose_name='Покупка'
+    )
+    buyer = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='buyer_contracts',
+        verbose_name='Покупатель'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='author_contracts',
+        verbose_name='Автор'
+    )
+    song = models.ForeignKey(
+        Song,
+        on_delete=models.CASCADE,
+        related_name='contracts',
+        verbose_name='Песня'
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name='Сумма'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата создания'
+    )
+    is_accepted_by_buyer = models.BooleanField(
+        default=False,
+        verbose_name='Подтверждено покупателем'
+    )
+    is_accepted_by_author = models.BooleanField(
+        default=False,
+        verbose_name='Подтверждено автором'
+    )
+
+    def __str__(self):
+        return f'Договор для {self.song.title} между {self.buyer.username} и {self.author.username}'
+
+    class Meta:
+        verbose_name = 'Договор'
+        verbose_name_plural = 'Договоры'
+        indexes = [
+            models.Index(fields=['purchase', 'buyer', 'author']),
+            models.Index(fields=['created_at']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['purchase', 'buyer', 'author', 'song'],
+                name='unique_contract'
+            ),
+            models.CheckConstraint(
+                check=models.Q(amount__gte=0),
+                name='contract_amount_non_negative'  # Уникальное имя
+            )
+        ]
+
 
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
         Cart.objects.create(user=instance)
+        Playlist.objects.create(user=instance)

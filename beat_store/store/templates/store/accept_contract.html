@@ -1,0 +1,15 @@
+{% extends 'store/base.html' %}
+{% block title %}Подтверждение договора{% endblock %}
+{% block content %}
+<main class="container my-4">
+    <h2>Подтверждение договора</h2>
+    <p><strong>Песня:</strong> {{ contract.song.title }}</p>
+    <p><strong>Покупатель:</strong> {{ contract.buyer.username }}</p>
+    <p><strong>Сумма:</strong> ₽{{ contract.amount|floatformat:2 }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Подтвердить договор</button>
+        <a href="{% url 'store:profile' contract.author.username %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</main>
+{% endblock %}

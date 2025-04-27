@@ -1,0 +1,29 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}Оформление заказа{% endblock %}
+{% block content %}
+<main class="container my-4">
+    <h2>Оформление заказа</h2>
+    <div class="cart-items">
+        {% for song in songs %}
+            <div class="cart-item">
+                <div class="cart-song-details">
+                    <img src="{{ song.image.url|default:'/static/images/music_img.jpeg' }}" alt="{{ song.title }}" class="cart-song-image">
+                    <div class="cart-song-info">
+                        <span class="cart-song-title">{{ song.title }}</span>
+                        <span class="cart-song-author">{{ song.author.username }}</span>
+                    </div>
+                </div>
+                <span class="cart-song-price">₽{{ song.price|floatformat:2 }}</span>
+            </div>
+        {% endfor %}
+    </div>
+    <p class="mt-4 fs-5"><strong>Итоговая сумма:</strong> ₽{{ total_price|floatformat:2 }}</p>
+    <p><strong>Ваш баланс:</strong> ₽{{ request.user.balance|floatformat:2 }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn checkout-button">Подтвердить покупку</button>
+        <a href="{% url 'store:cart' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</main>
+{% endblock %}

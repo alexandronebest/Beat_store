@@ -32,7 +32,7 @@
                 <div class="profile-details">
                     <h1 class="profile-title">{{ profile.user.username }}</h1>
                     {% if request.user == profile.user %}
-                        <p class="profile-balance"><strong>Баланс:</strong> ₽{{ request.user.balance }} <a href="{% url 'store:top_up_balance' %}" class="btn btn-primary btn-sm ms-2">Пополнить</a></p>
+                        <p class="profile-balance"><strong>Баланс:</strong> ₽{{ request.user.balance|floatformat:2 }} <a href="{% url 'store:top_up_balance' %}" class="btn btn-primary btn-sm ms-2">Пополнить</a></p>
                     {% endif %}
                     <div class="profile-stats">
                         <span><i class="bi bi-heart-fill"></i> {{ profile.total_likes }} лайков</span>
@@ -153,12 +153,6 @@
 
         <section class="category mb-5">
             <h2>Понравившиеся песни</h2>
-            <!-- Отладочный вывод для проверки liked_songs -->
-            {% if liked_songs %}
-                <p style="color: green;">Найдено {{ liked_songs|length }} понравившихся песен.</p>
-            {% else %}
-                <p style="color: red;">Понравившиеся песни отсутствуют.</p>
-            {% endif %}
             <div class="songs-container position-relative">
                 <button class="scroll-button left" onclick="scrollSongs('left', 'liked-songs')" aria-label="Прокрутить влево">❮</button>
                 <div class="songs" id="liked-songs">
@@ -222,7 +216,10 @@
             if (songsData.length === 0) {
                 console.warn('No songs available to play.');
             }
-            Player.updatePlaylist(songsData);
+            // Предполагается, что Player — это ваш объект для управления плейлистом
+            if (typeof Player !== 'undefined') {
+                Player.updatePlaylist(songsData);
+            }
 
             // Валидация формы профиля
             document.querySelectorAll('.profile-form').forEach(form => {

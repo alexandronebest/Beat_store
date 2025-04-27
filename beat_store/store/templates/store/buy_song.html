@@ -1,15 +1,13 @@
 {% extends 'store/base.html' %}
 {% load static %}
-
 {% block title %}Купить песню{% endblock %}
-
 {% block content %}
 <main class="container my-4">
     <h2>Купить песню: {{ song.title }}</h2>
     <div class="card p-4">
         <p><strong>Автор:</strong> {{ song.author.username }}</p>
-        <p><strong>Цена:</strong> ₽{{ song.price }}</p>
-        <p><strong>Ваш баланс:</strong> ₽{{ user_balance }}</p>
+        <p><strong>Цена:</strong> ₽{{ song.price|floatformat:2 }}</p>
+        <p><strong>Ваш баланс:</strong> ₽{{ user_balance|floatformat:2 }}</p>
         {% if user_balance >= song.price %}
             <form method="post">
                 {% csrf_token %}

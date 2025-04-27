@@ -1,6 +1,7 @@
 import logging
+import json
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -10,15 +11,12 @@ from django.contrib import messages
 from django.db.models import Count, F
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import login
-from django import forms
-from .models import Song, Genre, Transaction, Profile, User
-from .forms import SongForm, ProfileForm, CustomUserCreationForm
-import json
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Song, Cart, Purchase
 from django.db import transaction
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from .models import User, Song, Genre, Transaction, Profile, Cart, Purchase, Playlist, Contract
+from .forms import SongForm, ProfileForm, CustomUserCreationForm
+from django import forms  # Импорт для формы
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +48,7 @@ def index(request):
     new_songs = Song.objects.order_by('-created_at')[:10]
     genres = Genre.objects.all()
 
+    songs = list(top_songs) + list(new_songs)
     songs_json = [
         {
             'id': song.id,
@@ -61,7 +60,7 @@ def index(request):
             'total_plays': song.total_plays,
             'cover': song.cover.url if song.cover else '/static/images/default_cover.jpg'
         }
-        for song in (list(top_songs) + list(new_songs))
+        for song in songs
     ]
 
     context = {
@@ -74,7 +73,7 @@ def index(request):
 
 # Список музыки
 def music_list(request):
-    songs = Song.objects.all().order_by('-created_at')
+    songs = Song.objects.select_related('author', 'genre').all()
     genres = Genre.objects.all()
     authors = Profile.objects.filter(user__songs__isnull=False).select_related('user').distinct()
 
@@ -89,6 +88,7 @@ def music_list(request):
     if author_id:
         songs = songs.filter(author_id=author_id)
 
+    songs = songs.order_by('-created_at')
     paginator = Paginator(songs, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -104,7 +104,7 @@ def music_list(request):
             'total_plays': song.total_plays,
             'cover': song.cover.url if song.cover else '/static/images/default_cover.jpg'
         }
-        for song in songs
+        for song in page_obj
     ]
 
     context = {
@@ -120,11 +120,7 @@ def music_list(request):
 
 # Список авторов
 def authors_list(request):
-    # Фильтруем пользователей, у которых есть песни
-    authors = User.objects.filter(songs__isnull=False).distinct().order_by('username')
-    # Получаем связанные профили
-    profiles = Profile.objects.filter(user__in=authors).select_related('user')
-    # Пагинация
+    profiles = Profile.objects.filter(user__songs__isnull=False).select_related('user').order_by('user__username')
     paginator = Paginator(profiles, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -137,7 +133,8 @@ def authors_list(request):
 # Плейлист пользователя
 @login_required
 def playlist(request):
-    songs = Song.objects.filter(transaction__buyer=request.user, transaction__is_successful=True).order_by('-created_at')
+    playlist = get_object_or_404(Playlist, user=request.user)
+    songs = playlist.songs.select_related('author').order_by('-created_at')
     paginator = Paginator(songs, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -153,7 +150,7 @@ def playlist(request):
             'total_plays': song.total_plays,
             'cover': song.cover.url if song.cover else '/static/images/default_cover.jpg'
         }
-        for song in songs
+        for song in page_obj
     ]
 
     context = {
@@ -169,7 +166,9 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            Profile.objects.get_or_create(user=user)  # Создаём профиль при регистрации
+            Profile.objects.get_or_create(user=user)
+            Cart.objects.get_or_create(user=user)
+            Playlist.objects.get_or_create(user=user)
             messages.success(request, 'Регистрация успешна!')
             return redirect('store:index')
         else:
@@ -183,11 +182,18 @@ def register(request):
 def profile(request, username):
     user = get_object_or_404(User, username=username)
     profile = get_object_or_404(Profile, user=user)
-    is_own_profile = request.user.username == username
-    songs = Song.objects.filter(author=user).order_by('-created_at')
-    liked_songs = Song.objects.filter(likes=user).order_by('-created_at')
+    is_own_profile = request.user == user
+    
+    # Получаем песни без сортировки
+    songs = Song.objects.filter(author=user).select_related('genre')
+    liked_songs = Song.objects.filter(likes=user).select_related('genre')
+    
+    # Объединяем списки на уровне Python
+    all_songs = list(songs) + list(liked_songs)
+    # Сортируем по created_at
+    all_songs = sorted(all_songs, key=lambda x: x.created_at, reverse=True)
 
-    if request.method == 'POST':
+    if request.method == 'POST' and is_own_profile:
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
@@ -198,6 +204,7 @@ def profile(request, username):
     else:
         form = ProfileForm(instance=profile)
 
+    # Формируем JSON для песен
     songs_json = [
         {
             'id': song.id,
@@ -209,7 +216,7 @@ def profile(request, username):
             'total_plays': song.total_plays,
             'cover': song.cover.url if song.cover else '/static/images/default_cover.jpg'
         }
-        for song in (list(songs) + list(liked_songs))
+        for song in all_songs
     ]
 
     context = {
@@ -281,25 +288,16 @@ def delete_music(request, song_id):
         song.delete()
         messages.success(request, 'Песня успешно удалена.')
         return redirect('store:profile', username=request.user.username)
-    return redirect('store:profile', username=request.user.username)
+    return render(request, 'store/delete_music.html', {'song': song})
 
 # Лайк песни
 @login_required
 @require_POST
 @csrf_protect
 def like_song(request, song_id):
-    logger.debug(f"Получен запрос на лайк для song_id {song_id} от пользователя {request.user.username}")
     try:
         song = get_object_or_404(Song, id=song_id)
         user = request.user
-
-        if not user.is_authenticated:
-            logger.warning(f"Неавторизованный пользователь пытался поставить лайк на песню {song_id}")
-            return JsonResponse({
-                'success': False,
-                'message': 'Пожалуйста, войдите в аккаунт.',
-            }, status=403)
-
         if user in song.likes.all():
             song.likes.remove(user)
             liked = False
@@ -308,9 +306,7 @@ def like_song(request, song_id):
             song.likes.add(user)
             liked = True
             logger.debug(f"Пользователь {user.username} поставил лайк на песню {song_id}")
-
         song.save()
-
         return JsonResponse({
             'success': True,
             'liked': liked,
@@ -323,7 +319,7 @@ def like_song(request, song_id):
             'success': False,
             'message': f'Произошла ошибка при обработке лайка: {str(e)}',
             'error': str(e)
-        }, status=403 if 'permission' in str(e).lower() else 500)
+        }, status=500)
 
 # Воспроизведение песни
 @login_required
@@ -335,7 +331,6 @@ def play_song(request, song_id):
         song.total_plays = F('total_plays') + 1
         song.save()
         song.refresh_from_db()
-
         logger.debug(f"Песня {song_id} воспроизведена, общее количество: {song.total_plays}")
         return JsonResponse({
             'success': True,
@@ -357,52 +352,54 @@ def play_song(request, song_id):
 def add_to_cart(request, song_id):
     try:
         song = get_object_or_404(Song, id=song_id)
-        user = request.user
-
-        if Transaction.objects.filter(buyer=user, song=song, is_successful=True).exists():
-            logger.debug(f"Песня {song_id} уже куплена пользователем {user.username}")
-            return JsonResponse({
-                'success': False,
-                'message': f'Песня "{song.title}" уже куплена',
-                'is_purchased': True
-            }, status=200)
-
-        if 'cart' not in request.session:
-            request.session['cart'] = []
-
-        cart = request.session['cart']
-        if song_id not in cart:
-            cart.append(song_id)
-            request.session['cart'] = cart
-            request.session.modified = True
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        if Transaction.objects.filter(buyer=request.user, song=song, is_successful=True).exists():
+            logger.debug(f"Песня {song_id} уже куплена пользователем {request.user.username}")
+            messages.warning(request, f'Песня "{song.title}" уже куплена.')
+            return redirect('store:cart')
+        if song not in cart.songs.all():
+            cart.songs.add(song)
             logger.debug(f"Пользователь {user.username} добавил песню {song_id} в корзину")
-            return JsonResponse({
-                'success': True,
-                'message': f'Песня "{song.title}" добавлена в корзину',
-                'in_cart': True
-            }, status=200)
-        else:
-            logger.debug(f"Песня {song_id} уже в корзине пользователя {user.username}")
-            return JsonResponse({
-                'success': False,
-                'message': f'Песня "{song.title}" уже в корзине',
-                'in_cart': True
-            }, status=200)
+            messages.success(request, f'Песня "{song.title}" добавлена в корзину.')
+            return redirect('store:cart')
+        logger.debug(f"Песня {song_id} уже в корзине пользователя {request.user.username}")
+        messages.info(request, f'Песня "{song.title}" уже в корзине.')
+        return redirect('store:cart')
     except Exception as e:
         logger.error(f"Ошибка в add_to_cart для song_id {song_id}: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'message': f'Произошла ошибка при добавлении в корзину: {str(e)}',
-            'error': str(e)
-        }, status=403 if 'permission' in str(e).lower() else 500)
+        messages.error(request, f'Произошла ошибка при добавлении в корзину: {str(e)}')
+        return redirect('store:cart')
+
+# Удаление из корзины
+@login_required
+@require_POST
+@csrf_protect
+def remove_from_cart(request, song_id):
+    try:
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        song = get_object_or_404(Song, id=song_id)
+        if song in cart.songs.all():
+            cart.songs.remove(song)
+            logger.debug(f"Песня {song_id} удалена из корзины пользователя {request.user.username}")
+            messages.success(request, 'Песня удалена из корзины.')
+            return redirect('store:cart')
+        logger.debug(f"Песня {song_id} не найдена в корзине пользователя {request.user.username}")
+        messages.warning(request, 'Песня не найдена в корзине.')
+        return redirect('store:cart')
+    except Exception as e:
+        logger.error(f"Ошибка в remove_from_cart для song_id {song_id}: {str(e)}")
+        messages.error(request, f'Произошла ошибка при удалении из корзины: {str(e)}')
+        return redirect('store:cart')
 
 # Корзина
 @login_required
 def cart(request):
-    cart = request.session.get('cart', [])
-    songs = Song.objects.filter(id__in=cart)
-    
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    songs = cart.songs.select_related('author').all()
     total_price = sum(song.price for song in songs)
+    
+    # Получаем историю покупок пользователя
+    purchases = Purchase.objects.filter(user=request.user).select_related('user').prefetch_related('songs__author').order_by('-purchase_date')
     
     songs_json = [
         {
@@ -417,54 +414,60 @@ def cart(request):
         }
         for song in songs
     ]
-
+    
     context = {
         'songs': songs,
         'total_price': total_price,
+        'purchases': purchases,
         'songs_json': json.dumps(songs_json, ensure_ascii=False),
     }
     return render(request, 'store/cart.html', context)
-
-# Удаление из корзины
-@login_required
-@require_POST
-@csrf_protect
-def remove_from_cart(request, song_id):
-    try:
-        cart = request.session.get('cart', [])
-        if song_id in cart:
-            cart.remove(song_id)
-            request.session['cart'] = cart
-            request.session.modified = True
-            logger.debug(f"Песня {song_id} удалена из корзины пользователя {request.user.username}")
-            return JsonResponse({
-                'success': True,
-                'message': 'Песня удалена из корзины'
-            }, status=200)
-        else:
-            logger.debug(f"Песня {song_id} не найдена в корзине пользователя {request.user.username}")
-            return JsonResponse({
-                'success': False,
-                'message': 'Песня не найдена в корзине'
-            }, status=400)
-    except Exception as e:
-        logger.error(f"Ошибка в remove_from_cart для song_id {song_id}: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'message': f'Произошла ошибка при удалении из корзины: {str(e)}',
-            'error': str(e)
-        }, status=500)
 
 # Покупка одной песни
 @login_required
 def buy_song(request, song_id):
     song = get_object_or_404(Song, id=song_id)
     user = request.user
-
     if Transaction.objects.filter(buyer=user, song=song, is_successful=True).exists():
         messages.error(request, 'Вы уже приобрели эту песню.')
         return redirect('store:cart')
-
+    if request.method == 'POST':
+        if user.balance < song.price:
+            messages.error(request, f"Недостаточно средств. Ваш баланс: ₽{user.balance:.2f}. Необходимо: ₽{song.price:.2f}.")
+            return redirect('store:top_up_balance')
+        try:
+            with transaction.atomic():
+                user.balance -= song.price
+                user.save()
+                song.author.balance += song.price
+                song.author.save()
+                purchase = Purchase.objects.create(
+                    user=user,
+                    total_price=song.price
+                )
+                purchase.songs.add(song)
+                Transaction.objects.create(
+                    buyer=user,
+                    song=song,
+                    amount=song.price,
+                    is_successful=True
+                )
+                Contract.objects.create(
+                    purchase=purchase,
+                    buyer=user,
+                    author=song.author,
+                    song=song,
+                    amount=song.price,
+                    is_accepted_by_buyer=True
+                )
+                cart, created = Cart.objects.get_or_create(user=user)
+                cart.songs.remove(song)
+                messages.success(request, 'Песня успешно приобретена! Договор сформирован.')
+                return redirect('store:purchase_contract', purchase_id=purchase.id)
+        except Exception as e:
+            logger.error(f"Ошибка в buy_song для song_id {song_id}: {str(e)}")
+            messages.error(request, f'Ошибка при покупке: {str(e)}')
+            return redirect('store:cart')
     songs_json = [
         {
             'id': song.id,
@@ -477,54 +480,65 @@ def buy_song(request, song_id):
             'cover': song.cover.url if song.cover else '/static/images/default_cover.jpg'
         }
     ]
-
     context = {
         'song': song,
+        'user_balance': user.balance,
         'songs_json': json.dumps(songs_json, ensure_ascii=False),
     }
     return render(request, 'store/buy_song.html', context)
 
-# Обработка покупки
+# Обработка покупки (корзина)
 @login_required
-@require_POST
-@csrf_protect
 def process_purchase(request):
-    try:
-        cart = request.session.get('cart', [])
-        if not cart:
-            logger.debug(f"Корзина пуста при попытке покупки пользователем {request.user.username}")
-            return JsonResponse({
-                'success': False,
-                'message': 'Корзина пуста'
-            }, status=400)
-
-        songs = Song.objects.filter(id__in=cart)
-        user = request.user
-
-        for song in songs:
-            if not Transaction.objects.filter(buyer=user, song=song, is_successful=True).exists():
-                Transaction.objects.create(
-                    buyer=user,
-                    song=song,
-                    amount=song.price,
-                    is_successful=True
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    songs = cart.songs.select_related('author').all()
+    if not songs:
+        messages.error(request, "Ваша корзина пуста.")
+        return redirect('store:cart')
+    total_price = sum(song.price for song in songs)
+    if request.user.balance < total_price:
+        messages.error(request, f"Недостаточно средств. Ваш баланс: ₽{request.user.balance:.2f}. Необходимо: ₽{total_price:.2f}.")
+        return redirect('store:top_up_balance')
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                request.user.balance -= total_price
+                request.user.save()
+                purchase = Purchase.objects.create(
+                    user=request.user,
+                    total_price=total_price
                 )
-                logger.debug(f"Успешная покупка песни {song.id} пользователем {user.username}")
-
-        request.session['cart'] = []
-        request.session.modified = True
-        logger.debug(f"Корзина очищена после покупки для пользователя {request.user.username}")
-        return JsonResponse({
-            'success': True,
-            'message': 'Покупка успешно завершена'
-        }, status=200)
-    except Exception as e:
-        logger.error(f"Ошибка в process_purchase для пользователя {request.user.username}: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'message': f'Произошла ошибка при обработке покупки: {str(e)}',
-            'error': str(e)
-        }, status=500)
+                purchase.songs.set(songs)
+                for song in songs:
+                    if not Transaction.objects.filter(buyer=request.user, song=song, is_successful=True).exists():
+                        Transaction.objects.create(
+                            buyer=request.user,
+                            song=song,
+                            amount=song.price,
+                            is_successful=True
+                        )
+                        Contract.objects.create(
+                            purchase=purchase,
+                            buyer=request.user,
+                            author=song.author,
+                            song=song,
+                            amount=song.price,
+                            is_accepted_by_buyer=True
+                        )
+                        song.author.balance += song.price
+                        song.author.save()
+                cart.songs.clear()
+                messages.success(request, "Покупка успешно завершена! Договор сформирован.")
+                return redirect('store:purchase_contract', purchase_id=purchase.id)
+        except Exception as e:
+            logger.error(f"Ошибка в process_purchase для пользователя {request.user.username}: {str(e)}")
+            messages.error(request, f"Ошибка при обработке покупки: {str(e)}")
+            return redirect('store:cart')
+    context = {
+        'songs': songs,
+        'total_price': total_price,
+    }
+    return render(request, 'store/process_purchase.html', context)
 
 # Пополнение баланса
 @login_required
@@ -536,41 +550,35 @@ def top_up_balance(request):
             user = request.user
             user.balance += amount
             user.save()
-            messages.success(request, f'Баланс успешно пополнен на ₽{amount}.')
-            logger.debug(f"Пользователь {request.user.username} пополнил баланс на {amount}")
+            messages.success(request, f'Баланс успешно пополнен на ₽{amount:.2f}.')
+            logger.debug(f"Пользователь {user.username} пополнил баланс на {amount}")
             return redirect('store:cart')
         else:
             messages.error(request, 'Ошибка в форме пополнения. Проверьте введённые данные.')
     else:
         form = TopUpBalanceForm()
-    
     context = {
         'form': form,
         'current_balance': request.user.balance,
     }
     return render(request, 'store/top_up_balance.html', context)
 
-# В конец store/views.py добавьте:
-
+# Добавление в плейлист
 @login_required
 @require_POST
 @csrf_protect
 def add_to_playlist(request, song_id):
     try:
         song = get_object_or_404(Song, id=song_id)
-        user = request.user
-
-        # Предполагаем, что плейлист реализован через поле likes или отдельную модель.
-        # Здесь используется поле likes для простоты. Если у вас есть модель Playlist, замените логику.
-        if user in song.likes.all():
-            logger.debug(f"Песня {song_id} уже в плейлисте пользователя {user.username}")
+        playlist = get_object_or_404(Playlist, user=request.user)
+        if song in playlist.songs.all():
+            logger.debug(f"Песня {song_id} уже в плейлисте пользователя {request.user.username}")
             return JsonResponse({
                 'success': False,
                 'message': f'Песня "{song.title}" уже в плейлисте',
                 'in_playlist': True
             }, status=200)
-
-        song.likes.add(user)
+        playlist.songs.add(song)
         logger.debug(f"Пользователь {user.username} добавил песню {song_id} в плейлист")
         return JsonResponse({
             'success': True,
@@ -584,61 +592,42 @@ def add_to_playlist(request, song_id):
             'message': f'Произошла ошибка при добавлении в плейлист: {str(e)}',
             'error': str(e)
         }, status=500)
-    
 
-
-
-@login_required
-def process_purchase(request):
-    # Получаем корзину пользователя
-    cart, created = Cart.objects.get_or_create(user=request.user)
-    songs = cart.songs.all()
-    
-    if not songs:
-        messages.error(request, "Ваша корзина пуста.")
-        return redirect('store:cart')
-
-    # Вычисляем общую стоимость
-    total_price = sum(song.price for song in songs)
-    
-    # Проверяем баланс
-    if request.user.balance < total_price:
-        messages.error(request, f"Недостаточно средств. Ваш баланс: ₽{request.user.balance:.2f}. Необходимо: ₽{total_price:.2f}.")
-        return redirect('store:cart')
-
-    # Выполняем покупку в транзакции
-    try:
-        with transaction.atomic():
-            # Списываем деньги
-            request.user.balance -= total_price
-            request.user.save()
-
-            # Создаем запись о покупке
-            purchase = Purchase.objects.create(
-                user=request.user,
-                total_price=total_price
-            )
-            purchase.songs.set(songs)
-
-            # Очищаем корзину
-            cart.songs.clear()
-
-            # Добавляем сообщение об успехе
-            messages.success(request, "Покупка успешно завершена! Договор сформирован.")
-            
-            # Перенаправляем на страницу с договором
-            return redirect('store:purchase_contract', purchase_id=purchase.id)
-            
-    except Exception as e:
-        messages.error(request, f"Ошибка при обработке покупки: {str(e)}")
-        return redirect('store:cart')
-
+# Просмотр договора
 @login_required
 def purchase_contract(request, purchase_id):
     purchase = get_object_or_404(Purchase, id=purchase_id, user=request.user)
     context = {
         'purchase': purchase,
-        'songs': purchase.songs.all(),
+        'songs': purchase.songs.select_related('author').all(),
         'total_price': purchase.total_price,
     }
     return render(request, 'store/purchase_contract.html', context)
+
+# Подтверждение договора автором
+@login_required
+def accept_contract(request, contract_id):
+    contract = get_object_or_404(Contract, id=contract_id, author=request.user)
+    if request.method == 'POST':
+        contract.is_accepted_by_author = True
+        contract.save()
+        messages.success(request, f"Договор для песни '{contract.song.title}' подтверждён.")
+        return redirect('store:profile', username=request.user.username)
+    return render(request, 'store/accept_contract.html', {'contract': contract})
+
+# Скачивание PDF-версии договора
+@login_required
+def download_contract_pdf(request, purchase_id):
+    purchase = get_object_or_404(Purchase, id=purchase_id, user=request.user)
+    context = {
+        'purchase': purchase,
+        'songs': purchase.songs.select_related('author').all(),
+        'total_price': purchase.total_price,
+        'request': request,
+    }
+    html_string = render_to_string('store/purchase_contract.html', context)
+    html = HTML(string=html_string, base_url=request.build_absolute_uri())
+    pdf_file = html.write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="contract_{purchase_id}.pdf"'
+    return response
