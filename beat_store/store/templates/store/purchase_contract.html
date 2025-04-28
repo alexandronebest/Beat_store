@@ -1,75 +1,58 @@
-{% extends 'store/base.html' %}
+{% extends 'store/base_contract.html' %}
 {% load static %}
 
-{% block title %}Договор покупки{% endblock %}
-
-{% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/cart.css' %}">
-{% endblock %}
+{% block title %}Договор покупки #{{ purchase.id }} - Beat Store{% endblock %}
 
 {% block content %}
-<main class="container my-4">
-    <h2 class="mb-4">Договор покупки</h2>
-    <div class="contract-container bg-light p-4 rounded shadow-sm">
-        <h3 class="mb-3">Краткий договор о покупке музыкального контента</h3>
-        <p><strong>Покупатель:</strong> {{ request.user.username }} ({{ request.user.email }})</p>
-        <p><strong>Дата покупки:</strong> {{ purchase.purchase_date|date:"d.m.Y H:i" }}</p>
-        <p><strong>Номер покупки:</strong> #{{ purchase.id }}</p>
-        
-        <h4 class="mt-4 mb-3">Список приобретенных песен</h4>
-        <div class="cart-items">
-            {% for song in songs %}
-                <div class="cart-item">
-                    <div class="cart-song-details">
-                        <img src="{{ song.image.url|default:'/static/images/music_img.jpeg' }}" alt="{{ song.title }}" class="cart-song-image">
-                        <div class="cart-song-info">
-                            <span class="cart-song-title">{{ song.title }}</span>
-                            <span class="cart-song-author">{{ song.author.username }}</span>
-                        </div>
-                    </div>
-                    <div class="cart-song-actions">
-                        <span class="cart-song-price">₽{{ song.price|floatformat:2 }}</span>
-                        {% for contract in purchase.contracts.all %}
-                            {% if contract.song == song %}
-                                <span class="contract-status">
-                                    {% if contract.is_accepted_by_author %}
-                                        <span class="text-success"><i class="bi bi-check-circle"></i> Подтверждено автором</span>
-                                    {% else %}
-                                        <span class="text-warning"><i class="bi bi-hourglass-split"></i> Ожидает подтверждения автора</span>
-                                    {% endif %}
-                                </span>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-        
-        <p class="mt-4 fs-5"><strong>Итоговая сумма:</strong> ₽{{ total_price|floatformat:2 }}</p>
-        
-        <h4 class="mt-4 mb-3">Условия договора</h4>
-        <p>
-            Настоящий договор подтверждает, что пользователь {{ request.user.username }} приобрел указанные музыкальные композиции на платформе Beat Store. 
-            Покупатель получает неисключительное право на использование приобретенного контента для личных, некоммерческих целей. 
-            Все права на композиции остаются у их авторов. Платформа Beat Store не несет ответственности за использование контента в нарушение авторских прав.
-        </p>
-        <p>
-            Дата вступления договора в силу: {{ purchase.purchase_date|date:"d.m.Y" }}.<br>
-            Подпись покупателя: {{ request.user.username }} (автоматически сформировано системой).<br>
-            Подпись платформы: Beat Store (автоматически сформировано системой).
-        </p>
-        
-        <div class="mt-4 text-end">
-            <a href="{% url 'store:music_list' %}" class="btn auth-btn me-2">
-                <i class="bi bi-music-note-list me-1"></i> Вернуться к музыке
-            </a>
-            <button class="btn checkout-button me-2" onclick="window.print()">
-                <i class="bi bi-printer me-1"></i> Печать/Сохранить как PDF
-            </button>
-            <a href="{% url 'store:download_contract_pdf' purchase.id %}" class="btn checkout-button">
-                <i class="bi bi-download me-1"></i> Скачать PDF
-            </a>
-        </div>
+<div class="contract-container">
+    <div class="contract-header">
+        <h1>Договор покупки #{{ purchase.id }}</h1>
+        <p>Дата покупки: {{ purchase.purchase_date|date:"d.m.Y H:i" }}</p>
     </div>
-</main>
+
+    <h2>Детали покупки</h2>
+    <table class="contract-table">
+        <thead>
+            <tr>
+                <th>Песня</th>
+                <th>Автор</th>
+                <th>Цена</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for song in songs %}
+            <tr>
+                <td>{{ song.title }}</td>
+                <td>{{ song.author.username }}</td>
+                <td>₽{{ song.price|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">Песни отсутствуют</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2"><strong>Итого:</strong></td>
+                <td><strong>₽{{ total_price|floatformat:2 }}</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <h2>Условия договора</h2>
+    <p>
+        Настоящий договор подтверждает покупку музыкальных композиций, перечисленных выше,
+        пользователем {{ request.user.username }} у авторов, указанных в таблице.
+        Покупатель получает неисключительное право на использование композиций в личных целях.
+        Все права на интеллектуальную собственность остаются у авторов.
+    </p>
+
+    <div class="contract-actions">
+        <a href="{% url 'store:download_contract_pdf' purchase.id %}" class="btn btn-primary btn-download">
+            <i class="bi bi-file-earmark-pdf"></i> Скачать PDF
+        </a>
+        <a href="{% url 'store:cart' %}" class="btn btn-secondary">Вернуться в корзину</a>
+    </div>
+</div>
 {% endblock %}

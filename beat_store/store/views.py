@@ -291,6 +291,49 @@ def delete_music(request, song_id):
     return render(request, 'store/delete_music.html', {'song': song})
 
 # Лайк песни
+# @login_required
+# @require_POST
+# @csrf_protect
+# def like_song(request, song_id):
+#     try:
+#         song = get_object_or_404(Song, id=song_id)
+#         user = request.user
+#         if not user.is_authenticated:
+#             logger.warning(f"Неавторизованный доступ к like_song для song_id {song_id}")
+#             return JsonResponse({
+#                 'success': False,
+#                 'message': 'Пожалуйста, авторизуйтесь для выполнения этого действия.',
+#                 'error': 'User not authenticated'
+#             }, status=403)
+        
+#         if user in song.likes.all():
+#             song.likes.remove(user)
+#             liked = False
+#             logger.debug(f"Пользователь {user.username} убрал лайк с песни {song_id}")
+#         else:
+#             song.likes.add(user)
+#             liked = True
+#             logger.debug(f"Пользователь {user.username} поставил лайк на песню {song_id}")
+        
+#         # Обновляем total_likes
+#         song.total_likes = song.likes.count()
+#         song.save()
+        
+#         return JsonResponse({
+#             'success': True,
+#             'liked': liked,
+#             'total_likes': song.total_likes,
+#             'message': 'Лайк успешно обновлён'
+#         }, status=200)
+#     except Exception as e:
+#         logger.error(f"Ошибка в like_song для song_id {song_id}: {str(e)}")
+#         return JsonResponse({
+#             'success': False,
+#             'message': 'Не удалось поставить/убрать лайк. Попробуйте снова.',
+#             'error': str(e)
+#         }, status=500)
+
+
 @login_required
 @require_POST
 @csrf_protect
@@ -306,23 +349,21 @@ def like_song(request, song_id):
                 'error': 'User not authenticated'
             }, status=403)
         
-        if user in song.likes.all():
-            song.likes.remove(user)
-            liked = False
-            logger.debug(f"Пользователь {user.username} убрал лайк с песни {song_id}")
-        else:
-            song.likes.add(user)
-            liked = True
-            logger.debug(f"Пользователь {user.username} поставил лайк на песню {song_id}")
+        with transaction.atomic():
+            if user in song.likes.all():
+                song.likes.remove(user)
+                liked = False
+                logger.debug(f"Пользователь {user.username} убрал лайк с песни {song_id}")
+            else:
+                song.likes.add(user)
+                liked = True
+                logger.debug(f"Пользователь {user.username} поставил лайк на песню {song_id}")
         
-        # Обновляем total_likes
-        song.total_likes = song.likes.count()
-        song.save()
-        
+        total_likes = song.likes.count()
         return JsonResponse({
             'success': True,
             'liked': liked,
-            'total_likes': song.total_likes,
+            'total_likes': total_likes,
             'message': 'Лайк успешно обновлён'
         }, status=200)
     except Exception as e:
