@@ -5884,3 +5884,25 @@ Not Found: /cart_songs/
 Not Found: /cart_songs/
 Not Found: /cart_songs/
 Not Found: /cart_songs/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "c:\Users\alex-\Documents\GitHub\top-academy41\Beat_store\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\alex-\Documents\GitHub\top-academy41\Beat_store\.venv\Lib\site-packages\django\utils\deprecation.py", line 128, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\alex-\Documents\GitHub\top-academy41\Beat_store\.venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "c:\Users\alex-\Documents\GitHub\top-academy41\Beat_store\.venv\Lib\site-packages\django\http\request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Bad Request: /
+Not Found: /favicon.ico
+C:\Users\alex-\Documents\GitHub\Beat_store\beat_store\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\alex-\Documents\GitHub\Beat_store\beat_store\settings.py changed, reloading.
+Watching for file changes with StatReloader

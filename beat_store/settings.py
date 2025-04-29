@@ -26,7 +26,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['109.73.205.123', 'localhost'] 
+SRF_TRUSTED_ORIGINS = ['https://109.73.205.123',] 
 
 # Application definition
 INSTALLED_APPS = [
@@ -95,7 +96,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'staticfiles']
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Media files (uploaded by users)
