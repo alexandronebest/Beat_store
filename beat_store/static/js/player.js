@@ -251,17 +251,36 @@ const Player = (function () {
     // Получение состояния корзины с сервера
     async function fetchCartState(songId) {
         try {
-            const response = await fetch('/cart/', {
+            // Настройка таймаута
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 секунд
+
+            const response = await fetch(`/cart_songs/?songId=${songId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 credentials: 'include',
+                signal: controller.signal,
             });
+
+            clearTimeout(timeoutId); // Очищаем таймаут, если запрос успешен
+
+            // Проверяем успешность ответа
+            if (!response.ok) {
+                throw new Error(`HTTP ошибка: ${response.status}`);
+            }
+
             const data = await response.json();
+
+            // Проверяем структуру данных
+            if (!data || !Array.isArray(data.songs)) {
+                throw new Error('Некорректный формат данных: songs отсутствует или не является массивом');
+            }
+
             return data.songs.some(song => song.id === songId);
         } catch (error) {
-            console.error('Ошибка при получении состояния корзины:', error);
+            console.error(`Ошибка при получении состояния корзины для песни ${songId}:`, error.message);
             return false;
         }
     }
